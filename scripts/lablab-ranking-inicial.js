@@ -281,9 +281,9 @@ async function main() {
     title: art.titulo_seo, slug: art.slug || 'mejores-empresas-outplacement-chile', content: art.contenido_html, excerpt: art.extracto,
     status: 'publish', categories: [blogCatId],
     meta: {
-      rank_math_title: art.titulo_seo + ' | LabLab',
-      rank_math_description: art.meta_description,
-      rank_math_focus_keyword: art.focus_keyword || 'mejores empresas outplacement Chile'
+      rank_math_title: art.titulo_seo, _yoast_wpseo_title: art.titulo_seo, _seo_title: art.titulo_seo + ' | LabLab',
+      rank_math_description: art.meta_description, _yoast_wpseo_metadesc: art.meta_description, _seo_description: art.meta_description,
+      rank_math_focus_keyword: (art.focus_keyword || art.tags && art.tags[0] || ''), _yoast_wpseo_focuskw: (art.focus_keyword || art.tags && art.tags[0] || ''), _seo_focus_keyword: art.focus_keyword || 'mejores empresas outplacement Chile'
     }
   }
   if (mediaId) postBody.featured_media = mediaId
