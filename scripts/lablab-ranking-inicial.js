@@ -16,6 +16,7 @@ var RESEND_KEY = process.env.RESEND
 
 if (!WP_USER || !WP_PASS) { console.error('LABLAB_WP_USER y LABLAB_WP_APP_PASSWORD requeridas'); process.exit(1) }
 var AUTH = 'Basic ' + Buffer.from(WP_USER + ':' + WP_PASS).toString('base64')
+var UA = "LabLab-Blog-Agent/1.0 (WordPress; +https://www.lablab.cl)"
 
 if (!OPENAI_KEY) { console.error('OPENAI_API_KEY requerida'); process.exit(1) }
 
@@ -100,7 +101,7 @@ async function subirImagenWP(imgBuffer, titulo) {
       headers: {
         'Authorization': AUTH,
         'Content-Disposition': 'attachment; filename="' + filename + '"',
-        'Content-Type': 'image/png'
+        'Content-Type': 'image/png', 'User-Agent': UA
       },
       body: imgBuffer
     })
@@ -120,7 +121,7 @@ async function subirImagenWP(imgBuffer, titulo) {
 // ═══ ENSURE BLOG CATEGORY ═══
 async function ensureBlogCategory() {
   try {
-    var res = await fetchRetry(WP_URL + '/wp-json/wp/v2/categories?search=Blog&per_page=10', { headers: { Authorization: AUTH } })
+    var res = await fetchRetry(WP_URL + '/wp-json/wp/v2/categories?search=Blog&per_page=10', { headers: { Authorization: AUTH, 'User-Agent': UA } })
     var cats = await res.json()
     if (Array.isArray(cats)) {
       for (var i = 0; i < cats.length; i++) {
@@ -132,7 +133,7 @@ async function ensureBlogCategory() {
     }
     var createRes = await fetchRetry(WP_URL + '/wp-json/wp/v2/categories', {
       method: 'POST',
-      headers: { Authorization: AUTH, 'Content-Type': 'application/json' },
+      headers: { Authorization: AUTH, 'Content-Type': 'application/json', 'User-Agent': UA },
       body: JSON.stringify({ name: 'Blog', slug: 'blog', description: 'Artículos del blog de LabLab' })
     })
     var newCat = await createRes.json()
@@ -195,7 +196,7 @@ async function main() {
   var blogCatId = await ensureBlogCategory()
 
   // Check if already published
-  var res0 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?search=outplacement+chile+guia&per_page=5&_fields=title,slug', { headers: { Authorization: AUTH } })
+  var res0 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?search=outplacement+chile+guia&per_page=5&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
   var existing = await res0.json()
   if (Array.isArray(existing) && existing.some(function(p) { return p.slug === 'mejores-empresas-outplacement-chile' })) {
     console.log('⚠️ El ranking inicial ya fue publicado (slug existe). Saltando.')
@@ -279,7 +280,7 @@ async function main() {
   }
   if (mediaId) postBody.featured_media = mediaId
   var pubRes = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts', {
-    method: 'POST', headers: { Authorization: AUTH, 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Authorization: AUTH, 'Content-Type': 'application/json', 'User-Agent': UA },
     body: JSON.stringify(postBody)
   })
   var post = await pubRes.json()
