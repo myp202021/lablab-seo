@@ -21,16 +21,24 @@ if (!OPENAI_KEY) { console.error('OPENAI_API_KEY requerida'); process.exit(1) }
 
 // ═══ RETRY WRAPPER ═══
 async function fetchRetry(url, opts, retries) {
-  retries = retries || 3
+  retries = retries || 5
   for (var i = 0; i < retries; i++) {
     try {
       var r = await fetch(url, opts)
-      if (r.ok || r.status < 500) return r
+      if (r.ok || r.status < 500) {
+        // Check if response is HTML instead of JSON (hosting WAF block)
+        var ct = r.headers.get('content-type') || ''
+        if (url.includes('wp-json') && ct.includes('text/html')) {
+          console.log('  ⚠️ HTML response en vez de JSON (WAF?) intento ' + (i+1) + '/' + retries)
+          if (i < retries - 1) { await new Promise(function(r) { setTimeout(r, 5000 * (i+1)) }); continue }
+        }
+        return r
+      }
       console.log('  ⚠️ HTTP ' + r.status + ' (intento ' + (i+1) + '/' + retries + ')')
     } catch(e) {
       console.log('  ⚠️ ' + e.message + ' (intento ' + (i+1) + '/' + retries + ')')
     }
-    if (i < retries - 1) await new Promise(function(r) { setTimeout(r, 3000 * (i+1)) })
+    if (i < retries - 1) await new Promise(function(r) { setTimeout(r, 5000 * (i+1)) })
   }
   throw new Error('Falló después de ' + retries + ' intentos: ' + url)
 }
