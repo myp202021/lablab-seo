@@ -1,0 +1,43 @@
+name: "LabLab — Ranking Semanal (Viernes 08:00 AM Chile)"
+
+on:
+  schedule:
+    - cron: '0 11 * * 5'  # 11:00 UTC = 08:00 AM Chile — Viernes
+  workflow_dispatch:
+
+jobs:
+  ranking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install node-fetch@2
+
+      - name: "Generar y publicar ranking"
+        run: node scripts/lablab-rankings-semanal.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LABLAB_WP_URL: ${{ secrets.LABLAB_WP_URL }}
+          LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
+          LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+          RESEND: ${{ secrets.RESEND }}
+
+      - name: "Alerta si falla"
+        if: failure()
+        run: |
+          node -e "
+          var fetch = require('node-fetch');
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ${{ secrets.RESEND }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'contacto@mulleryperez.cl',
+              to: 'contacto@mulleryperez.cl',
+              subject: '⚠️ FALLO Ranking LabLab — ' + new Date().toISOString().split('T')[0],
+              html: '<h2>El ranking semanal de LabLab falló</h2><p>Revisa <a href=\"https://github.com/myp202021/lablab-seo/actions\">GitHub Actions</a></p>'
+            })
+          }).catch(function(e){console.error(e)})
+          "

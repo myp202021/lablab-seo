@@ -1,0 +1,43 @@
+name: "LabLab — Blog Diario (07:30 AM Chile)"
+
+on:
+  schedule:
+    - cron: '30 10 * * 1-5'  # 10:30 UTC = 07:30 AM Chile (CLT = UTC-3) — L-V
+  workflow_dispatch:
+
+jobs:
+  blog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install node-fetch@2
+
+      - name: "Generar y publicar artículo"
+        run: node scripts/lablab-blog-diario.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LABLAB_WP_URL: ${{ secrets.LABLAB_WP_URL }}
+          LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
+          LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+          RESEND: ${{ secrets.RESEND }}
+
+      - name: "Alerta si falla"
+        if: failure()
+        run: |
+          node -e "
+          var fetch = require('node-fetch');
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ${{ secrets.RESEND }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'contacto@mulleryperez.cl',
+              to: 'contacto@mulleryperez.cl',
+              subject: '⚠️ FALLO Blog LabLab — ' + new Date().toISOString().split('T')[0],
+              html: '<h2>El blog diario de LabLab falló</h2><p>Revisa <a href=\"https://github.com/myp202021/lablab-seo/actions\">GitHub Actions</a></p>'
+            })
+          }).catch(function(e){console.error(e)})
+          "

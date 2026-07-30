@@ -1,0 +1,41 @@
+name: "LabLab — Ranking Inicial (manual)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ranking-inicial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install node-fetch@2
+
+      - name: "Generar y publicar ranking inicial"
+        run: node scripts/lablab-ranking-inicial.js
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LABLAB_WP_URL: ${{ secrets.LABLAB_WP_URL }}
+          LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
+          LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+          RESEND: ${{ secrets.RESEND }}
+
+      - name: "Alerta si falla"
+        if: failure()
+        run: |
+          node -e "
+          var fetch = require('node-fetch');
+          fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ${{ secrets.RESEND }}', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'contacto@mulleryperez.cl',
+              to: 'contacto@mulleryperez.cl',
+              subject: '⚠️ FALLO Ranking Inicial LabLab — ' + new Date().toISOString().split('T')[0],
+              html: '<h2>El ranking inicial de LabLab falló</h2><p>Revisa <a href=\"https://github.com/myp202021/lablab-seo/actions\">GitHub Actions</a></p>'
+            })
+          }).catch(function(e){console.error(e)})
+          "
