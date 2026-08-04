@@ -24,6 +24,8 @@ jobs:
           LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
           LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
           RESEND: ${{ secrets.RESEND }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+          PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
 
       - name: "Alerta si falla"
         if: failure()

@@ -13,39 +13,34 @@ var WP_USER = process.env.LABLAB_WP_USER
 var WP_PASS = process.env.LABLAB_WP_APP_PASSWORD
 var OPENAI_KEY = process.env.OPENAI_API_KEY
 var RESEND_KEY = process.env.RESEND
+var PROXY_URL = process.env.PROXY_URL    // e.g. https://lablab-seo.vercel.app
+var PROXY_SECRET = process.env.PROXY_SECRET
 
 if (!WP_USER || !WP_PASS) { console.error('LABLAB_WP_USER y LABLAB_WP_APP_PASSWORD requeridas'); process.exit(1) }
 var AUTH = 'Basic ' + Buffer.from(WP_USER + ':' + WP_PASS).toString('base64')
-var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 if (!OPENAI_KEY) { console.error('OPENAI_API_KEY requerida'); process.exit(1) }
 
-// ═══ RETRY WRAPPER ═══
+// ═══ RETRY WRAPPER (con proxy Vercel para WP) ═══
 async function fetchRetry(url, opts, retries) {
-  retries = retries || 5
-  // Inject browser-like headers for WP requests to avoid WAF blocks
-  if (url.includes('wp-json')) {
-    opts.headers = Object.assign({ 'User-Agent': UA, 'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'es-CL,es;q=0.9,en;q=0.8' }, opts.headers || {})
+  retries = retries || 3
+  // Rutar llamadas WP a través del proxy Vercel para evitar WAF 403
+  if (PROXY_URL && url.startsWith(WP_URL)) {
+    var wpPath = url.substring(WP_URL.length)
+    url = PROXY_URL + '/api/wp-proxy'
+    opts.headers = opts.headers || {}
+    opts.headers['X-WP-Path'] = wpPath
+    opts.headers['X-Proxy-Secret'] = PROXY_SECRET
   }
   for (var i = 0; i < retries; i++) {
     try {
       var r = await fetch(url, opts)
-      if (r.ok || r.status < 500) {
-        // Check if response is HTML instead of JSON (hosting WAF block)
-        var ct = r.headers.get('content-type') || ''
-        if (url.includes('wp-json') && ct.includes('text/html')) {
-          var htmlBody = await r.text()
-          if (i === 0) console.log('  🔍 WAF HTML (primeros 500 chars):\n' + htmlBody.substring(0, 500))
-          console.log('  ⚠️ HTML response en vez de JSON (WAF?) intento ' + (i+1) + '/' + retries + ' status=' + r.status)
-          if (i < retries - 1) { await new Promise(function(r) { setTimeout(r, 5000 * (i+1)) }); continue }
-        }
-        return r
-      }
+      if (r.ok || r.status < 500) return r
       console.log('  ⚠️ HTTP ' + r.status + ' (intento ' + (i+1) + '/' + retries + ')')
     } catch(e) {
       console.log('  ⚠️ ' + e.message + ' (intento ' + (i+1) + '/' + retries + ')')
     }
-    if (i < retries - 1) await new Promise(function(r) { setTimeout(r, 5000 * (i+1)) })
+    if (i < retries - 1) await new Promise(function(r) { setTimeout(r, 3000 * (i+1)) })
   }
   throw new Error('Falló después de ' + retries + ' intentos: ' + url)
 }
