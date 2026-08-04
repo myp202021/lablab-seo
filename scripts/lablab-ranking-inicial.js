@@ -307,7 +307,7 @@ async function main() {
     if (RESEND_KEY) {
       await fetch('https://api.resend.com/emails', { method: 'POST',
         headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: 'M&P SEO <contacto@mulleryperez.cl>', to: ['contacto@mulleryperez.cl'],
+        body: JSON.stringify({ from: 'M&P SEO <contacto@mulleryperez.cl>', to: ['contacto@mulleryperez.cl', 'graciela.trincado@lablab.cl', 'david.faille@lablab.cl'],
           subject: '🏆 LabLab Ranking Inicial PUBLICADO: ' + art.titulo_seo,
           html: '<h2>Ranking Inicial LabLab — Artículo Flagship</h2><p><strong>' + art.titulo_seo + '</strong></p><p>' + (art.contenido_html||'').length + ' caracteres HTML</p><p><a href="' + url + '">Ver artículo →</a></p><p><small>IndexNow + Google Ping enviados ✓</small></p>'
         })

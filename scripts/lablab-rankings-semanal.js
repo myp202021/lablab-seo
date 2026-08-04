@@ -318,7 +318,7 @@ async function main() {
     if (RESEND_KEY) {
       await fetch('https://api.resend.com/emails', { method: 'POST',
         headers: { 'Authorization': 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: 'M&P SEO <contacto@mulleryperez.cl>', to: ['contacto@mulleryperez.cl'],
+        body: JSON.stringify({ from: 'M&P SEO <contacto@mulleryperez.cl>', to: ['contacto@mulleryperez.cl', 'graciela.trincado@lablab.cl', 'david.faille@lablab.cl'],
           subject: '📊 LabLab Ranking: ' + art.titulo_seo,
           html: '<h2>Nuevo ranking en LabLab</h2><p><strong>' + art.titulo_seo + '</strong></p><p>' + art.meta_description + '</p><p><a href="' + url + '">Ver →</a></p><p><small>IndexNow enviado ✓</small></p>'
         })
