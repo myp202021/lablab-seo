@@ -17,6 +17,7 @@ var PROXY_SECRET = process.env.PROXY_SECRET
 
 if (!WP_USER || !WP_PASS) { console.error('LABLAB_WP_USER y LABLAB_WP_APP_PASSWORD requeridas'); process.exit(1) }
 var AUTH = 'Basic ' + Buffer.from(WP_USER + ':' + WP_PASS).toString('base64')
+var UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
 
 if (!OPENAI_KEY) { console.error('OPENAI_API_KEY requerida'); process.exit(1) }
 
