@@ -34,7 +34,9 @@ async function fetchRetry(url, opts, retries) {
         // Check if response is HTML instead of JSON (hosting WAF block)
         var ct = r.headers.get('content-type') || ''
         if (url.includes('wp-json') && ct.includes('text/html')) {
-          console.log('  ⚠️ HTML response en vez de JSON (WAF?) intento ' + (i+1) + '/' + retries)
+          var htmlBody = await r.text()
+          if (i === 0) console.log('  🔍 WAF HTML (primeros 500 chars):\n' + htmlBody.substring(0, 500))
+          console.log('  ⚠️ HTML response en vez de JSON (WAF?) intento ' + (i+1) + '/' + retries + ' status=' + r.status)
           if (i < retries - 1) { await new Promise(function(r) { setTimeout(r, 5000 * (i+1)) }); continue }
         }
         return r
