@@ -16,13 +16,17 @@ var RESEND_KEY = process.env.RESEND
 
 if (!WP_USER || !WP_PASS) { console.error('LABLAB_WP_USER y LABLAB_WP_APP_PASSWORD requeridas'); process.exit(1) }
 var AUTH = 'Basic ' + Buffer.from(WP_USER + ':' + WP_PASS).toString('base64')
-var UA = "LabLab-Blog-Agent/1.0 (WordPress; +https://www.lablab.cl)"
+var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 if (!OPENAI_KEY) { console.error('OPENAI_API_KEY requerida'); process.exit(1) }
 
 // ═══ RETRY WRAPPER ═══
 async function fetchRetry(url, opts, retries) {
   retries = retries || 5
+  // Inject browser-like headers for WP requests to avoid WAF blocks
+  if (url.includes('wp-json')) {
+    opts.headers = Object.assign({ 'User-Agent': UA, 'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'es-CL,es;q=0.9,en;q=0.8' }, opts.headers || {})
+  }
   for (var i = 0; i < retries; i++) {
     try {
       var r = await fetch(url, opts)
