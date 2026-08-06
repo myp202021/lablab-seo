@@ -275,10 +275,12 @@ async function main() {
   // Ensure Blog category exists
   var blogCatId = await ensureBlogCategory()
 
+  var forceRun = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch'
   var hoy = new Date().toISOString().split('T')[0]
   var res0 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?after=' + hoy + 'T00:00:00&status=publish&per_page=5', { headers: { Authorization: AUTH, 'User-Agent': UA } })
   var hoyPosts = await res0.json()
-  if (Array.isArray(hoyPosts) && hoyPosts.length > 0) { console.log('Ya se publicó hoy. Saltando.'); return }
+  if (Array.isArray(hoyPosts) && hoyPosts.length > 0 && !forceRun) { console.log('Ya se publicó hoy. Saltando.'); return }
+  if (forceRun) { console.log('⚡ Forzado manual — ignorando chequeo de duplicados de hoy') }
 
   var res1 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?per_page=100&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
   var existRaw = await res1.json()
