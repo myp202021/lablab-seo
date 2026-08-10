@@ -193,12 +193,88 @@ var TEMAS = [
 
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes para el blog de LabLab. Tu escritura es empática, profesional y basada en datos reales del mercado laboral chileno.\n\nREGLAS CRÍTICAS:\n- El nombre de la empresa es "LabLab" (siempre capitalizado así). NUNCA escribir "Lab Lab", "LABLAB", "lab lab" ni ninguna otra variante.\n- Todo el contenido debe ser actual: año 2026. NUNCA mencionar años anteriores (2023, 2024, 2025) como si fueran actuales.\n- NUNCA mencionar competidores por nombre. Si necesitas comparar, usa descripciones genéricas ("otras consultoras", "firmas internacionales").\n- Párrafos cortos (3-4 oraciones). La gente que lee esto está en un momento de transición profesional.\n- Datos concretos: cifras del mercado laboral chileno, porcentajes de recolocación, plazos reales.\n- Tono: como un consultor senior empático. Profesional pero cercano. Sin jerga innecesaria.\n- CERO frases vacías: nada de "en el complejo mundo de", "cabe señalar", "es importante destacar".\n- Cita fuentes autoritativas reales con links:\n  * DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n  * INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n  * SENCE: https://www.sence.cl — capacitación, programas de empleo\n  * Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\n- Incluye al menos 1 link externo a fuentes autoritativas en cada artículo.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
 
+var ESTILOS_INLINE = 'ESTILOS INLINE OBLIGATORIOS EN TODO EL HTML:\n- H2: style="color:#1a365d;font-size:24px;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0"\n- H3: style="color:#2d3748;font-size:18px;margin:24px 0 12px"\n- Párrafos: style="line-height:1.8;margin-bottom:16px;color:#2d3748"\n- Listas UL: style="margin:16px 0;padding-left:24px;line-height:1.8"\n- LI: style="margin-bottom:8px;color:#2d3748"\n- Links: style="color:#2b6cb0;font-weight:500;text-decoration:underline"\n- Tablas: <table style="width:100%;border-collapse:collapse;margin:24px 0;font-size:15px;box-shadow:0 1px 2px rgba(0,0,0,0.06)">\n  <thead><tr><th style="background:#1a365d;color:white;padding:12px 16px;text-align:left;font-weight:600">...</th></tr></thead>\n  <tbody><tr><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr>\n  <tr style="background:#f7fafc"><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr></tbody></table>\n- Callout: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0"><strong>Importante:</strong> texto</div>'
+
+var LINKS_INTERNOS = 'LINKS INTERNOS DISPONIBLES (usa mínimo 2 a lo largo del artículo):\n- <a href="/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para empresas</a>\n- <a href="/servicios-para-personas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para personas</a>\n- <a href="/nosotros/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">sobre LabLab</a>\n- <a href="/contacto/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">contacto</a>'
+
+// ═══ STEP 1: GENERATE OUTLINE ═══
+async function generarOutline(tema) {
+  console.log('  📋 Paso 1: Generando outline...')
+  var prompt = 'Genera un outline detallado para un artículo de blog profesional.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026\nNOMBRE EMPRESA: "LabLab"\n\nDebe tener:\n- Un párrafo gancho inicial (sin H2) con situación real o dato del mercado laboral chileno 2026\n- 8-10 secciones H2, cada una con 3-5 puntos clave a desarrollar\n- AL MENOS una sección debe incluir una tabla comparativa\n- AL MENOS una sección debe incluir un callout box informativo\n- La penúltima sección DEBE ser "Conclusión" con CTA a contactar a LabLab\n- La última sección DEBE ser "Preguntas frecuentes" con exactamente 5 preguntas relevantes\n\nDevuelve JSON (sin markdown, sin backticks):\n{\n  "titulo_seo": "max 60 chars, keyword al inicio, año 2026",\n  "meta_description": "max 155 chars",\n  "slug": "slug-corto",\n  "extracto": "2 oraciones resumen",\n  "focus_keyword": "' + tema.kw.split(',')[0].trim() + '",\n  "tags": ["' + tema.kw.split(',')[0].trim() + '", "outplacement Chile", "transición laboral"],\n  "parrafo_gancho": "Instrucción breve de qué debe decir el párrafo gancho inicial",\n  "secciones": [\n    {"h2": "Título de la sección", "puntos": ["punto clave 1", "punto clave 2", "punto clave 3"], "incluye_tabla": false, "incluye_callout": false},\n    ...\n  ]\n}'
+
+  var r = await fetchRetry('https://api.openai.com/v1/chat/completions', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'gpt-4o', messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: prompt }
+    ], temperature: 0.6, max_tokens: 3000, response_format: { type: 'json_object' } })
+  })
+  var data = await r.json()
+  var raw = data.choices[0].message.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '')
+  var outline = JSON.parse(raw)
+  console.log('  ✅ Outline: ' + outline.secciones.length + ' secciones')
+  return outline
+}
+
+// ═══ STEP 2: GENERATE EACH SECTION ═══
+async function generarSeccion(tema, outline, seccion, index, total) {
+  var isFirst = index === 0
+  var isConclusion = seccion.h2.toLowerCase().includes('conclusi')
+  var isFaq = seccion.h2.toLowerCase().includes('pregunta') || seccion.h2.toLowerCase().includes('faq') || seccion.h2.toLowerCase().includes('frecuente')
+
+  var outlineResumen = outline.secciones.map(function(s, i) { return (i+1) + '. ' + s.h2 }).join('\n')
+
+  var instrucciones = 'Escribe SOLO la sección ' + (index+1) + ' de ' + total + ' de un artículo de blog.\n\n'
+  instrucciones += 'TEMA DEL ARTÍCULO: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nAÑO: 2026\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\n'
+  instrucciones += 'OUTLINE COMPLETO DEL ARTÍCULO:\n' + outlineResumen + '\n\n'
+  instrucciones += 'SECCIÓN A ESCRIBIR: "' + seccion.h2 + '"\nPUNTOS CLAVE A CUBRIR:\n' + seccion.puntos.map(function(p) { return '- ' + p }).join('\n') + '\n\n'
+
+  if (isFirst) {
+    instrucciones += 'IMPORTANTE: Esta es la PRIMERA sección. Comienza con un párrafo gancho SIN H2 (situación real o dato del mercado laboral chileno 2026). Luego el H2 "' + seccion.h2 + '" y su contenido.\n\n'
+  }
+
+  if (isConclusion) {
+    instrucciones += 'IMPORTANTE: Esta es la Conclusión. Incluye un CTA claro a <a href="/contacto/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n\n'
+  }
+
+  if (isFaq) {
+    instrucciones += 'IMPORTANTE: Esta sección son Preguntas Frecuentes. Usa H3 para cada pregunta (5 preguntas). Cada respuesta debe tener 3-5 oraciones.\n\n'
+  }
+
+  if (seccion.incluye_tabla) {
+    instrucciones += 'IMPORTANTE: Esta sección DEBE incluir una tabla HTML comparativa con los estilos inline correctos.\n\n'
+  }
+
+  if (seccion.incluye_callout) {
+    instrucciones += 'IMPORTANTE: Esta sección DEBE incluir un callout box informativo.\n\n'
+  }
+
+  instrucciones += ESTILOS_INLINE + '\n\n'
+  instrucciones += LINKS_INTERNOS + '\n\n'
+  instrucciones += 'EXTENSIÓN: 400-600 palabras para esta sección. Contenido denso, datos concretos, sin relleno.\n\n'
+  instrucciones += 'Responde SOLO con HTML puro (sin JSON, sin backticks, sin markdown). Empieza directamente con el HTML.'
+
+  var r = await fetchRetry('https://api.openai.com/v1/chat/completions', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'gpt-4o', messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: instrucciones }
+    ], temperature: 0.6, max_tokens: 3000 })
+  })
+  var data = await r.json()
+  var html = data.choices[0].message.content.trim()
+  // Strip markdown code fences if present
+  html = html.replace(/^```html?\n?/, '').replace(/\n?```$/, '')
+  console.log('    Sección ' + (index+1) + '/' + total + ': "' + seccion.h2 + '" — ' + html.length + ' chars')
+  return html
+}
+
 function buildUserPrompt(tema) {
-  return 'ESCRIBE UN ARTÍCULO DE BLOG PROFESIONAL Y BIEN DISEÑADO.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026 (todo el contenido debe ser actual, NUNCA mencionar años anteriores como actuales)\n\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\nESTILOS INLINE OBLIGATORIOS EN TODO EL HTML:\n- H2: style="color:#1a365d;font-size:24px;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0"\n- H3: style="color:#2d3748;font-size:18px;margin:24px 0 12px"\n- Párrafos: style="line-height:1.8;margin-bottom:16px;color:#2d3748"\n- Listas UL: style="margin:16px 0;padding-left:24px;line-height:1.8"\n- LI: style="margin-bottom:8px;color:#2d3748"\n- Links: style="color:#2b6cb0;font-weight:500;text-decoration:underline"\n- Tablas: <table style="width:100%;border-collapse:collapse;margin:24px 0;font-size:15px;box-shadow:0 1px 2px rgba(0,0,0,0.06)">\n  <thead><tr><th style="background:#1a365d;color:white;padding:12px 16px;text-align:left;font-weight:600">...</th></tr></thead>\n  <tbody><tr><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr>\n  <tr style="background:#f7fafc"><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr></tbody></table>\n- Callout: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0"><strong>Importante:</strong> texto</div>\n\nESTRUCTURA OBLIGATORIA:\n1. NO H1 (WordPress lo genera). Párrafo gancho con situación real o dato del mercado laboral chileno de 2026.\n2. Mínimo 6 H2, cada uno 200-400 palabras. H3 donde aplique.\n3. AL MENOS una tabla HTML con los estilos de arriba.\n4. AL MENOS un callout box.\n5. H2 "Conclusión" con CTA a <a href="/contacto/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n6. H2 "Preguntas frecuentes" con 5 preguntas como H3.\n\nLINKS INTERNOS (mínimo 2):\n- <a href="/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para empresas</a>\n- <a href="/servicios-para-personas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para personas</a>\n- <a href="/nosotros/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">sobre LabLab</a>\n- <a href="/contacto/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">contacto</a>\n\nEXTENSIÓN: Mínimo 1.500 palabras. contenido_html mínimo 6.000 caracteres.\n\nJSON (sin markdown, sin backticks):\n{"titulo_seo":"max 60 chars, keyword al inicio, año 2026","meta_description":"max 155 chars","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2 style=...>...</h2><p style=...>...</p>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","transición laboral"]}'
+  return 'ESCRIBE UN ARTÍCULO DE BLOG PROFESIONAL Y BIEN DISEÑADO.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026 (todo el contenido debe ser actual, NUNCA mencionar años anteriores como actuales)\n\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\n' + ESTILOS_INLINE + '\n\nESTRUCTURA OBLIGATORIA:\n1. NO H1 (WordPress lo genera). Párrafo gancho con situación real o dato del mercado laboral chileno de 2026.\n2. Mínimo 6 H2, cada uno 200-400 palabras. H3 donde aplique.\n3. AL MENOS una tabla HTML con los estilos de arriba.\n4. AL MENOS un callout box.\n5. H2 "Conclusión" con CTA a <a href="/contacto/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n6. H2 "Preguntas frecuentes" con 5 preguntas como H3.\n\n' + LINKS_INTERNOS + '\n\nEXTENSIÓN: Mínimo 1.500 palabras. contenido_html mínimo 6.000 caracteres.\n\nJSON (sin markdown, sin backticks):\n{"titulo_seo":"max 60 chars, keyword al inicio, año 2026","meta_description":"max 155 chars","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2 style=...>...</h2><p style=...>...</p>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","transición laboral"]}'
 }
 
 // ═══ QA GATE ═══
-var QA = { minChars: 6000, minH2: 4, requireTable: true, requireFaq: true, minLinks: 2 }
+var QA = { minChars: 20000, minH2: 7, requireTable: true, requireFaq: true, minLinks: 2 }
 
 function checkQuality(html) {
   var issues = [], len = (html||'').length, h2s = (html||'').split('<h2').length-1
@@ -299,27 +375,56 @@ async function main() {
   var tema = disponibles[Math.floor(Math.random() * disponibles.length)]
   console.log('Tema: ' + tema.titulo + '\nKW: ' + tema.kw + '\nDisponibles: ' + disponibles.length + '/' + TEMAS.length)
 
-  console.log('\nGenerando...')
-  var usrPr = buildUserPrompt(tema)
-  var msgs = [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: usrPr }]
-  var r = await fetchRetry('https://api.openai.com/v1/chat/completions', {
-    method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'gpt-4o', messages: msgs, temperature: 0.6, max_tokens: 8000, response_format: { type: 'json_object' } })
-  })
-  var data = await r.json()
-  var raw = data.choices[0].message.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '')
-  var art
-  try { art = JSON.parse(raw) } catch(e) {
-    console.log('⚠️ JSON parse failed, retrying...')
-    console.log('Raw:', raw.substring(0, 200))
+  console.log('\nGenerando artículo sección por sección...')
+
+  // Step 1: Generate outline
+  var outline
+  try {
+    outline = await generarOutline(tema)
+  } catch(e) {
+    console.log('  ⚠️ Outline failed (' + e.message + '), retrying...')
     await new Promise(function(r) { setTimeout(r, 3000) })
-    var r2 = await fetchRetry('https://api.openai.com/v1/chat/completions', {
-      method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-4o', messages: msgs, temperature: 0.5, max_tokens: 8000, response_format: { type: 'json_object' } })
-    })
-    var d2 = await r2.json()
-    raw = d2.choices[0].message.content.trim().replace(/^```json?\n?/, '').replace(/\n?```$/, '')
-    art = JSON.parse(raw)
+    outline = await generarOutline(tema)
+  }
+
+  // Step 2: Generate each section sequentially
+  console.log('  📝 Paso 2: Generando ' + outline.secciones.length + ' secciones...')
+  var seccionesHtml = []
+  for (var si = 0; si < outline.secciones.length; si++) {
+    try {
+      var secHtml = await generarSeccion(tema, outline, outline.secciones[si], si, outline.secciones.length)
+      seccionesHtml.push(secHtml)
+    } catch(e) {
+      console.log('    ⚠️ Sección ' + (si+1) + ' falló (' + e.message + '), reintentando...')
+      await new Promise(function(r) { setTimeout(r, 3000) })
+      var secHtml2 = await generarSeccion(tema, outline, outline.secciones[si], si, outline.secciones.length)
+      seccionesHtml.push(secHtml2)
+    }
+  }
+
+  // Step 3: Unify all sections
+  console.log('  🔗 Paso 3: Unificando artículo...')
+  var contenidoFinal = seccionesHtml.join('\n\n')
+
+  var art = {
+    titulo_seo: outline.titulo_seo,
+    meta_description: outline.meta_description,
+    slug: outline.slug,
+    extracto: outline.extracto,
+    focus_keyword: outline.focus_keyword,
+    tags: outline.tags,
+    contenido_html: contenidoFinal
+  }
+
+  console.log('  ✅ Artículo unificado: ' + contenidoFinal.length + ' chars')
+
+  // QA check — warn but don't block
+  var qaCheck = checkQuality(art.contenido_html)
+  console.log('  QA: HTML=' + qaCheck.stats.len + ' H2=' + qaCheck.stats.h2s + ' T=' + qaCheck.stats.tables + ' FAQ=' + qaCheck.stats.faq + ' L=' + qaCheck.stats.links)
+  if (!qaCheck.pass) {
+    console.log('  ⚠️ QA issues (non-blocking): ' + qaCheck.issues.join(', '))
+  } else {
+    console.log('  ✅ QA OK')
   }
 
   // Verificar que el slug no sea duplicado
@@ -327,8 +432,6 @@ async function main() {
     art.slug = art.slug + '-' + hoy.replace(/-/g, '')
     console.log('  Slug duplicado, ajustado a: ' + art.slug)
   }
-
-  art = await validarYCorregir(art, raw, SYSTEM_PROMPT, usrPr)
 
   // Inyectar FAQ schema JSON-LD
   var faqSchema = buildFaqSchema(art.contenido_html)
