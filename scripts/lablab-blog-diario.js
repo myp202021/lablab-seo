@@ -342,6 +342,10 @@ function similarity(a, b) {
   return common / Math.max(wordsA.length, wordsB.length)
 }
 
+function slugBase(s) {
+  return (s||'').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '')
+}
+
 // ═══ MAIN ═══
 async function main() {
   console.log('═══════════════════════════════════════════')
@@ -365,9 +369,15 @@ async function main() {
   var existSlugs = existRaw.map(function(p) { return p.slug })
   console.log('Posts existentes: ' + existTitles.length)
 
-  // Dedup mejorado: similaridad de título > 70% = duplicado
+  // Dedup mejorado: similaridad de título > 70% O slug base ya existe = duplicado
   var disponibles = TEMAS.filter(function(t) {
-    return !existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 })
+    var titleMatch = existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 })
+    if (titleMatch) return false
+    var tSlug = normalize(t.titulo).replace(/ /g, '-')
+    var slugMatch = existSlugs.some(function(s) {
+      return slugBase(s) === slugBase(tSlug) || slugBase(s).indexOf(tSlug.substring(0, 25)) === 0
+    })
+    return !slugMatch
   })
   if (!disponibles.length) {
     console.log('⚠️ Todos los temas ya fueron cubiertos. Saltando para evitar duplicados.')
@@ -428,9 +438,12 @@ async function main() {
     console.log('  ✅ QA OK')
   }
 
-  // Verificar que el slug no sea duplicado
-  if (existSlugs.includes(art.slug)) {
-    art.slug = art.slug + '-' + hoy.replace(/-/g, '')
+  // Verificar que el slug no sea duplicado (incluyendo base-slug match)
+  var slugConflict = existSlugs.some(function(s) {
+    return s === art.slug || slugBase(s) === slugBase(art.slug)
+  })
+  if (slugConflict) {
+    art.slug = slugBase(art.slug) + '-' + hoy.replace(/-/g, '')
     console.log('  Slug duplicado, ajustado a: ' + art.slug)
   }
 
