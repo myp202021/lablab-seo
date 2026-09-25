@@ -383,19 +383,30 @@ async function main() {
     console.log('⚠️ Todos los temas ya fueron cubiertos. Saltando para evitar duplicados.')
     return
   }
-  var tema = disponibles[Math.floor(Math.random() * disponibles.length)]
-  console.log('Tema: ' + tema.titulo + '\nKW: ' + tema.kw + '\nDisponibles: ' + disponibles.length + '/' + TEMAS.length)
-
-  console.log('\nGenerando artículo sección por sección...')
-
-  // Step 1: Generate outline
-  var outline
-  try {
-    outline = await generarOutline(tema)
-  } catch(e) {
-    console.log('  ⚠️ Outline failed (' + e.message + '), retrying...')
-    await new Promise(function(r) { setTimeout(r, 3000) })
-    outline = await generarOutline(tema)
+  // Elegir tema y validar el outline contra lo publicado: si el slug/título generado ya existe,
+  // es el mismo tema con otras palabras → descartar y probar otro (antes se publicaba con -fecha y duplicaba)
+  var tema, outline
+  for (var intento = 0; intento < 4 && disponibles.length; intento++) {
+    tema = disponibles.splice(Math.floor(Math.random() * disponibles.length), 1)[0]
+    console.log('Tema: ' + tema.titulo + '\nKW: ' + tema.kw + '\nDisponibles: ' + (disponibles.length + 1) + '/' + TEMAS.length)
+    console.log('\nGenerando artículo sección por sección...')
+    try {
+      outline = await generarOutline(tema)
+    } catch(e) {
+      console.log('  ⚠️ Outline failed (' + e.message + '), retrying...')
+      await new Promise(function(r) { setTimeout(r, 3000) })
+      outline = await generarOutline(tema)
+    }
+    var repetido = existSlugs.some(function(s) { return slugBase(s) === slugBase(outline.slug) }) ||
+      existTitles.some(function(e) { return similarity(e, outline.titulo_seo) > 0.6 })
+    if (!repetido) break
+    console.log('  ⚠️ Tema ya publicado ("' + outline.titulo_seo + '"). Probando otro tema...')
+    outline = null
+  }
+  if (!outline) {
+    console.log('⚠️ No se encontró tema nuevo tras 4 intentos. No se publica para evitar duplicados.')
+    process.exitCode = 1
+    return
   }
 
   // Step 2: Generate each section sequentially
@@ -443,8 +454,9 @@ async function main() {
     return s === art.slug || slugBase(s) === slugBase(art.slug)
   })
   if (slugConflict) {
-    art.slug = slugBase(art.slug) + '-' + hoy.replace(/-/g, '')
-    console.log('  Slug duplicado, ajustado a: ' + art.slug)
+    console.log('  ❌ Slug ya publicado (' + art.slug + '). No se publica para evitar duplicado.')
+    process.exitCode = 1
+    return
   }
 
   // Inyectar FAQ schema JSON-LD
