@@ -1,3 +1,4 @@
+require('./lib/correo') // correos por Gmail (ver scripts/lib/correo.js)
 // lablab-rankings-semanal.js
 // Genera 1 artículo de ranking/guía exhaustiva semanal para lablab.cl
 // Corre cada viernes via GitHub Actions

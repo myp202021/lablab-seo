@@ -1,3 +1,4 @@
+require('./lib/correo') // correos por Gmail (ver scripts/lib/correo.js)
 // lablab-blog-diario.js
 // Genera 1 artículo de blog diario para lablab.cl
 // Publica via WordPress REST API + Rank Math SEO

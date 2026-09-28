@@ -5,6 +5,11 @@ on:
     - cron: '0 11 * * 5'  # 11:00 UTC = 08:00 AM Chile — Viernes
   workflow_dispatch:
 
+env:
+  GMAIL_USER: ${{ secrets.GMAIL_USER }}
+  GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+  CORREO_MODO: gmail
+
 jobs:
   ranking:
     runs-on: ubuntu-latest
@@ -14,7 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install node-fetch@2
+      - run: npm install node-fetch@2 nodemailer@6
 
       - name: "Generar y publicar ranking"
         run: node scripts/lablab-rankings-semanal.js

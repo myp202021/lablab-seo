@@ -5,6 +5,11 @@ on:
     - cron: '30 10 * * 1-5'  # 10:30 UTC = 07:30 AM Chile (CLT = UTC-3) — L-V
   workflow_dispatch:
 
+env:
+  GMAIL_USER: ${{ secrets.GMAIL_USER }}
+  GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+  CORREO_MODO: gmail
+
 jobs:
   blog:
     runs-on: ubuntu-latest
@@ -14,7 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install node-fetch@2
+      - run: npm install node-fetch@2 nodemailer@6
 
       - name: "Generar y publicar artículo"
         run: node scripts/lablab-blog-diario.js
