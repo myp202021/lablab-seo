@@ -218,7 +218,7 @@ var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recu
 
 var ESTILOS_INLINE = 'ESTILOS INLINE OBLIGATORIOS EN TODO EL HTML:\n- H2: style="color:#1a365d;font-size:24px;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0"\n- H3: style="color:#2d3748;font-size:18px;margin:24px 0 12px"\n- Párrafos: style="line-height:1.8;margin-bottom:16px;color:#2d3748"\n- Listas UL: style="margin:16px 0;padding-left:24px;line-height:1.8"\n- LI: style="margin-bottom:8px;color:#2d3748"\n- Links: style="color:#2b6cb0;font-weight:500;text-decoration:underline"\n- Tablas: <table style="width:100%;border-collapse:collapse;margin:24px 0;font-size:15px;box-shadow:0 1px 2px rgba(0,0,0,0.06)">\n  <thead><tr><th style="background:#1a365d;color:white;padding:12px 16px;text-align:left;font-weight:600">...</th></tr></thead>\n  <tbody><tr><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr>\n  <tr style="background:#f7fafc"><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr></tbody></table>\n- Callout: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0"><strong>Importante:</strong> texto</div>'
 
-var LINKS_INTERNOS = 'LINKS INTERNOS DISPONIBLES (usa mínimo 2 a lo largo del artículo):\n- <a href="/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para empresas</a>\n- <a href="/servicios-para-personas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para personas</a>\n- <a href="/nosotros/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">sobre LabLab</a>\n- <a href="/contacto/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">contacto</a>'
+var LINKS_INTERNOS = 'LINKS INTERNOS DISPONIBLES (usa mínimo 2 a lo largo del artículo):\n- <a href="/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para empresas</a>\n- <a href="/servicios-para-personas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para personas</a>\n- <a href="/nosotros/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">sobre LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">contacto</a>'
 
 // ═══ STEP 1: GENERATE OUTLINE ═══
 async function generarOutline(tema) {
@@ -257,7 +257,7 @@ async function generarSeccion(tema, outline, seccion, index, total) {
   }
 
   if (isConclusion) {
-    instrucciones += 'IMPORTANTE: Esta es la Conclusión. Incluye un CTA claro a <a href="/contacto/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n\n'
+    instrucciones += 'IMPORTANTE: Esta es la Conclusión. Incluye un CTA claro a <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n\n'
   }
 
   if (isFaq) {
@@ -293,7 +293,7 @@ async function generarSeccion(tema, outline, seccion, index, total) {
 }
 
 function buildUserPrompt(tema) {
-  return 'ESCRIBE UN ARTÍCULO DE BLOG PROFESIONAL Y BIEN DISEÑADO.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026 (todo el contenido debe ser actual, NUNCA mencionar años anteriores como actuales)\n\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\n' + ESTILOS_INLINE + '\n\nESTRUCTURA OBLIGATORIA:\n1. NO H1 (WordPress lo genera). Párrafo gancho con situación real o dato del mercado laboral chileno de 2026.\n2. Mínimo 6 H2, cada uno 200-400 palabras. H3 donde aplique.\n3. AL MENOS una tabla HTML con los estilos de arriba.\n4. AL MENOS un callout box.\n5. H2 "Conclusión" con CTA a <a href="/contacto/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n6. H2 "Preguntas frecuentes" con 5 preguntas como H3.\n\n' + LINKS_INTERNOS + '\n\nEXTENSIÓN: Mínimo 1.500 palabras. contenido_html mínimo 6.000 caracteres.\n\nJSON (sin markdown, sin backticks):\n{"titulo_seo":"max 60 chars, keyword al inicio, año 2026","meta_description":"max 155 chars","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2 style=...>...</h2><p style=...>...</p>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","transición laboral"]}'
+  return 'ESCRIBE UN ARTÍCULO DE BLOG PROFESIONAL Y BIEN DISEÑADO.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026 (todo el contenido debe ser actual, NUNCA mencionar años anteriores como actuales)\n\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\n' + ESTILOS_INLINE + '\n\nESTRUCTURA OBLIGATORIA:\n1. NO H1 (WordPress lo genera). Párrafo gancho con situación real o dato del mercado laboral chileno de 2026.\n2. Mínimo 6 H2, cada uno 200-400 palabras. H3 donde aplique.\n3. AL MENOS una tabla HTML con los estilos de arriba.\n4. AL MENOS un callout box.\n5. H2 "Conclusión" con CTA a <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n6. H2 "Preguntas frecuentes" con 5 preguntas como H3.\n\n' + LINKS_INTERNOS + '\n\nEXTENSIÓN: Mínimo 1.500 palabras. contenido_html mínimo 6.000 caracteres.\n\nJSON (sin markdown, sin backticks):\n{"titulo_seo":"max 60 chars, keyword al inicio, año 2026","meta_description":"max 155 chars","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2 style=...>...</h2><p style=...>...</p>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","transición laboral"]}'
 }
 
 // ═══ QA GATE ═══
@@ -323,7 +323,7 @@ async function validarYCorregir(art, raw, sysPr, usrPr) {
     if (c.stats.h2s < QA.minH2) fixes.push('Solo ' + c.stats.h2s + ' H2, mín ' + QA.minH2)
     if (!c.stats.tables) fixes.push('FALTA tabla HTML <table>')
     if (!c.stats.faq) fixes.push('FALTA H2 "Preguntas frecuentes" con H3')
-    if (c.stats.links < QA.minLinks) fixes.push('Faltan links internos <a href="/">LabLab</a> y <a href="/contacto/">')
+    if (c.stats.links < QA.minLinks) fixes.push('Faltan links internos <a href="/">LabLab</a> y <a href="/servicios-para-empresas/">')
     var r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'gpt-4o', messages: [
