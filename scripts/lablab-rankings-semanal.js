@@ -195,6 +195,41 @@ var TEMAS = [
 
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes rankings y guías exhaustivas para el blog de LabLab. Tono: analista riguroso pero accesible. Datos verificables del mercado laboral chileno. NUNCA contenido genérico.\n\nREGLAS CRÍTICAS:\n- El nombre es "LabLab" (siempre capitalizado así). NUNCA "Lab Lab", "LABLAB" ni variantes.\n- Todo contenido es de 2026. NUNCA mencionar años anteriores como si fueran actuales.\n- NO mencionar competidores por nombre. Usar descripciones genéricas ("firmas internacionales", "consultoras locales").\n- Tablas HTML con estilos inline profesionales (background en headers, padding, bordes).\n- Usar callout boxes: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0;">...</div>\n\nSIEMPRE cita fuentes autoritativas con links reales:\n- DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n- INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n- SENCE: https://www.sence.cl — capacitación, programas de empleo\n- Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\nIncluye al menos 2 links externos a estas fuentes en cada ranking.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
 
+// ═══ ANTI-DUPLICADOS (30 sept 2026) ═══
+// GPT reescribe los títulos ("Liderazgo en crisis..." → "Liderazgo Crisis Chile 2026: Retener Talento"), así que comparar
+// títulos exactos o slugs deja pasar el mismo tema. Se compara por raíces (5 letras) de las palabras relevantes:
+// si un título publicado contiene 2/3 o más de las raíces del tema (mínimo 2), el tema ya está cubierto.
+var VACIAS_DUP = 'para como cual cuales guia completa clave claves chile 2026 2025 2024 2023 tus sus los las del con que mejores mejor top ranking todo debes saber paso'.split(' ')
+function raicesTema(t) {
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
+    .filter(function(w) { return w.length > 3 && !/^\d+$/.test(w) && VACIAS_DUP.indexOf(w) === -1 })
+    .map(function(w) { return w.substring(0, 5) })
+    .filter(function(w, i, a) { return a.indexOf(w) === i })
+}
+function temaPublicado(texto, titulosExistentes) {
+  var r = raicesTema(texto)
+  if (r.length < 2) return null
+  for (var i = 0; i < titulosExistentes.length; i++) {
+    var e = raicesTema(titulosExistentes[i])
+    var comunes = r.filter(function(w) { return e.indexOf(w) !== -1 }).length
+    // Cubierto si el existente contiene 2/3 del tema, o si el tema contiene 2/3 de un existente de 3+ raíces
+    if (comunes >= 2 && (comunes / r.length >= 0.66 || (e.length >= 3 && comunes / e.length >= 0.66))) return titulosExistentes[i]
+  }
+  return null
+}
+async function todosLosPosts(url, headers) {
+  var todos = []
+  for (var pag = 1; pag <= 10; pag++) {
+    // fetchRetry: en LabLab el WordPress solo responde vía proxy (WAF)
+    var r = await fetchRetry(url + (url.indexOf('?') === -1 ? '?' : '&') + 'per_page=100&page=' + pag + '&_fields=title,slug', { headers: headers })
+    var lote = await r.json()
+    if (!Array.isArray(lote) || !lote.length) break
+    todos = todos.concat(lote)
+    if (lote.length < 100) break
+  }
+  return todos
+}
+
 async function main() {
   console.log('═══════════════════════════════════════════')
   console.log('  LABLAB — RANKING SEMANAL')
@@ -203,15 +238,19 @@ async function main() {
 
   var blogCatId = await ensureBlogCategory()
 
-  var res0 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?per_page=50&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
-  var existRaw = await res0.json()
+  var existRaw = await todosLosPosts(WP_URL + '/wp-json/wp/v2/posts', { Authorization: AUTH, 'User-Agent': UA })
   var existTitles = existRaw.map(function(p) { return p.title.rendered })
   var existSlugs = existRaw.map(function(p) { return p.slug })
 
   var disponibles = TEMAS.filter(function(t) {
-    return !existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 })
+    return !existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 }) && !temaPublicado(t.titulo, existTitles)
   })
-  if (!disponibles.length) disponibles = TEMAS
+  // Antes: si se agotaban, se reiniciaba la lista y se publicaban rankings repetidos
+  if (!disponibles.length) {
+    console.log('⚠️ Todos los rankings ya están publicados. Agregar temas nuevos a TEMAS.')
+    process.exitCode = 1
+    return
+  }
   var tema = disponibles[Math.floor(Math.random() * disponibles.length)]
   console.log('Tema: ' + tema.titulo + '\nKW: ' + tema.kw + '\nDisponibles: ' + disponibles.length + '/' + TEMAS.length)
 
