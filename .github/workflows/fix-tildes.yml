@@ -1,0 +1,29 @@
+name: "Corregir tildes rotas (manual)"
+on:
+  workflow_dispatch:
+    inputs:
+      aplicar:
+        description: 'Aplicar cambios (si no, solo revisa)'
+        type: boolean
+        default: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/fix-tildes-2026-09-30.js
+        env:
+          APLICAR: ${{ inputs.aplicar && '1' || '' }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+          PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+          LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
+          LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: respaldo-tildes
+          path: respaldo/
