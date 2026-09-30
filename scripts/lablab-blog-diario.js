@@ -190,6 +190,27 @@ var TEMAS = [
   { titulo: 'Liderazgo en tiempos de crisis: cómo retener talento sin presupuesto', kw: 'liderazgo crisis Chile, retener talento sin presupuesto, gestión personas crisis', tipo: 'guía' },
   { titulo: 'Retiro activo: cómo prepararse para una jubilación con propósito', kw: 'retiro activo jubilación, prepararse jubilación Chile, jubilación con propósito', tipo: 'guía' },
   { titulo: 'Transición laboral en Chile: estadísticas y tiempos promedio', kw: 'transición laboral Chile estadísticas, tiempo encontrar trabajo Chile, recolocación datos', tipo: 'educativo' },
+  // Tanda 2 (30 sept 2026): los 28 temas anteriores ya estaban todos publicados
+  { titulo: 'Ley Karin y desvinculaciones: qué deben cuidar las empresas', kw: 'ley karin desvinculación, ley karin despido, ley karin empresas', tipo: 'guía' },
+  { titulo: 'Carta de despido en Chile: requisitos y errores comunes', kw: 'carta de despido Chile, requisitos carta despido, carta aviso término contrato', tipo: 'guía' },
+  { titulo: 'Despido por necesidades de la empresa: el artículo 161 explicado', kw: 'necesidades de la empresa artículo 161, despido necesidades empresa, causal 161', tipo: 'educativo' },
+  { titulo: 'Seguro de cesantía AFC: cómo cobrarlo después de un despido', kw: 'seguro de cesantía AFC, cobrar seguro cesantía, AFC despido', tipo: 'guía' },
+  { titulo: 'Qué hacer los primeros 30 días después de un despido', kw: 'qué hacer después de un despido, primeros días sin trabajo, despido qué hacer', tipo: 'guía' },
+  { titulo: 'Cómo comunicar un despido masivo al equipo que se queda', kw: 'comunicar despido masivo, comunicación despidos equipo, anunciar despidos', tipo: 'guía' },
+  { titulo: 'Síndrome del sobreviviente: cómo cuidar al equipo después de los despidos', kw: 'síndrome del sobreviviente despidos, clima laboral después despidos, equipo post despidos', tipo: 'educativo' },
+  { titulo: 'Cómo elegir una empresa de outplacement: 8 criterios', kw: 'elegir empresa outplacement, cómo contratar outplacement, criterios outplacement', tipo: 'guía' },
+  { titulo: 'Cómo medir el éxito de un programa de outplacement', kw: 'indicadores outplacement, medir resultados outplacement, KPI outplacement', tipo: 'guía' },
+  { titulo: 'Buscar trabajo después de los 50 en Chile', kw: 'trabajo mayores de 50 Chile, empleo después de los 50, buscar trabajo 50 años', tipo: 'guía' },
+  { titulo: 'Cómo explicar un despido en una entrevista de trabajo', kw: 'explicar despido entrevista, por qué dejaste tu trabajo, hablar de despido entrevista', tipo: 'guía' },
+  { titulo: 'Emprender después de un despido: guía para profesionales', kw: 'emprender después de un despido, emprender con finiquito, emprendimiento ejecutivos', tipo: 'guía' },
+  { titulo: 'Interim management en Chile: una salida para ejecutivos senior', kw: 'interim management Chile, gerente interino, ejecutivo interino', tipo: 'educativo' },
+  { titulo: 'Headhunters en Chile: cómo trabajan y cómo llegar a ellos', kw: 'headhunters Chile, cómo contactar headhunter, reclutamiento ejecutivo', tipo: 'guía' },
+  { titulo: 'El mercado oculto de empleo: cómo llegar a vacantes que no se publican', kw: 'mercado oculto de empleo, vacantes no publicadas, empleo oculto', tipo: 'guía' },
+  { titulo: 'Salud mental tras perder el empleo: señales y apoyo', kw: 'salud mental despido, ansiedad pérdida de empleo, duelo laboral', tipo: 'educativo' },
+  { titulo: 'Offboarding: checklist para una salida ordenada del colaborador', kw: 'offboarding empleados, proceso de salida colaborador, checklist offboarding', tipo: 'guía' },
+  { titulo: 'Plan de sucesión: cómo preparar la salida de ejecutivos clave', kw: 'plan de sucesión empresas, sucesión ejecutivos, reemplazo gerentes', tipo: 'guía' },
+  { titulo: 'Movilidad interna como alternativa al despido', kw: 'movilidad interna empresas, reubicación interna, alternativa al despido', tipo: 'educativo' },
+  { titulo: 'Entrevistas por video y con IA: cómo prepararse', kw: 'entrevista por video, entrevista con inteligencia artificial, entrevista online', tipo: 'guía' },
 ]
 
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes para el blog de LabLab. Tu escritura es empática, profesional y basada en datos reales del mercado laboral chileno.\n\nREGLAS CRÍTICAS:\n- El nombre de la empresa es "LabLab" (siempre capitalizado así). NUNCA escribir "Lab Lab", "LABLAB", "lab lab" ni ninguna otra variante.\n- Todo el contenido debe ser actual: año 2026. NUNCA mencionar años anteriores (2023, 2024, 2025) como si fueran actuales.\n- NUNCA mencionar competidores por nombre. Si necesitas comparar, usa descripciones genéricas ("otras consultoras", "firmas internacionales").\n- Párrafos cortos (3-4 oraciones). La gente que lee esto está en un momento de transición profesional.\n- Datos concretos: cifras del mercado laboral chileno, porcentajes de recolocación, plazos reales.\n- Tono: como un consultor senior empático. Profesional pero cercano. Sin jerga innecesaria.\n- CERO frases vacías: nada de "en el complejo mundo de", "cabe señalar", "es importante destacar".\n' +
@@ -343,6 +364,18 @@ function similarity(a, b) {
   return common / Math.max(wordsA.length, wordsB.length)
 }
 
+// La keyword principal ya está en un título publicado si todas sus palabras relevantes (5+ letras) aparecen en él,
+// comparando por raíz (6 letras) para tolerar plurales y orden distinto
+function kwCubierta(kw, tituloNorm) {
+  var palabras = normalize(kw).split(' ').filter(function(w) { return w.length > 4 })
+  if (!palabras.length) return false
+  var enTitulo = tituloNorm.split(' ')
+  return palabras.every(function(w) {
+    var raiz = w.substring(0, 6)
+    return enTitulo.some(function(x) { return x.substring(0, 6) === raiz })
+  })
+}
+
 function slugBase(s) {
   return (s||'').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '')
 }
@@ -364,16 +397,26 @@ async function main() {
   if (Array.isArray(hoyPosts) && hoyPosts.length > 0 && !forceRun) { console.log('Ya se publicó hoy. Saltando.'); return }
   if (forceRun) { console.log('⚡ Forzado manual — ignorando chequeo de duplicados de hoy') }
 
-  var res1 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?per_page=100&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
-  var existRaw = await res1.json()
+  var existRaw = []
+  for (var pag = 1; pag <= 5; pag++) {
+    var res1 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?per_page=100&page=' + pag + '&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
+    var lote = await res1.json()
+    if (!Array.isArray(lote) || !lote.length) break
+    existRaw = existRaw.concat(lote)
+    if (lote.length < 100) break
+  }
   var existTitles = existRaw.map(function(p) { return p.title.rendered })
   var existSlugs = existRaw.map(function(p) { return p.slug })
   console.log('Posts existentes: ' + existTitles.length)
 
-  // Dedup mejorado: similaridad de título > 70% O slug base ya existe = duplicado
+  // Dedup: similaridad de título > 70%, keyword principal ya presente en un título publicado
+  // (GPT reescribe los títulos: "IA y el mercado laboral..." se publica como "Inteligencia Artificial Empleo Chile...")
+  // o slug base ya existe = duplicado
+  var existNorm = existTitles.map(normalize)
   var disponibles = TEMAS.filter(function(t) {
     var titleMatch = existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 })
     if (titleMatch) return false
+    if (existNorm.some(function(e) { return kwCubierta(t.kw.split(',')[0], e) })) return false
     var tSlug = normalize(t.titulo).replace(/ /g, '-')
     var slugMatch = existSlugs.some(function(s) {
       return slugBase(s) === slugBase(tSlug) || slugBase(s).indexOf(tSlug.substring(0, 25)) === 0
@@ -381,9 +424,11 @@ async function main() {
     return !slugMatch
   })
   if (!disponibles.length) {
-    console.log('⚠️ Todos los temas ya fueron cubiertos. Saltando para evitar duplicados.')
+    console.log('⚠️ Todos los temas ya fueron cubiertos. Hay que agregar temas nuevos a TEMAS.')
+    process.exitCode = 1
     return
   }
+  if (disponibles.length <= 5) console.log('⚠️ Quedan solo ' + disponibles.length + ' temas sin publicar: agregar temas nuevos a TEMAS.')
   // Elegir tema y validar el outline contra lo publicado: si el slug/título generado ya existe,
   // es el mismo tema con otras palabras → descartar y probar otro (antes se publicaba con -fecha y duplicaba)
   var tema, outline
