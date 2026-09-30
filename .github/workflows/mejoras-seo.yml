@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node scripts/mejoras-seo-2026-09-30.js
+      - run: node scripts/instalar-rankmath-2026-09-30.js
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
