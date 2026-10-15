@@ -1,6 +1,10 @@
 name: "Mejoras SEO puntuales (manual)"
 on:
   workflow_dispatch:
+    inputs:
+      script:
+        description: "script a correr (en scripts/)"
+        default: "h1-portada-2026-10-15.js"
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -10,9 +14,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node scripts/instalar-rankmath-2026-09-30.js
+      - run: node scripts/${{ inputs.script }}
         env:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
           LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
           LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: respaldos
+          path: respaldo-*.json
+          if-no-files-found: ignore
