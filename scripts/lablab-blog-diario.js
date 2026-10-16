@@ -1,4 +1,6 @@
 require('./lib/correo') // correos por Gmail (ver scripts/lib/correo.js)
+var asegurarTitulo = require('./lib/titulo').asegurarTitulo
+var temaPublicado = require('./lib/duplicados').temaPublicado
 // lablab-blog-diario.js
 // Genera 1 artículo de blog diario para lablab.cl
 // Publica via WordPress REST API + Rank Math SEO
@@ -223,7 +225,7 @@ var LINKS_INTERNOS = 'LINKS INTERNOS DISPONIBLES (usa mínimo 2 a lo largo del a
 // ═══ STEP 1: GENERATE OUTLINE ═══
 async function generarOutline(tema) {
   console.log('  📋 Paso 1: Generando outline...')
-  var prompt = 'Genera un outline detallado para un artículo de blog profesional.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026\nNOMBRE EMPRESA: "LabLab"\n\nDebe tener:\n- Un párrafo gancho inicial (sin H2) con situación real o dato del mercado laboral chileno 2026\n- 8-10 secciones H2, cada una con 3-5 puntos clave a desarrollar\n- AL MENOS una sección debe incluir una tabla comparativa\n- AL MENOS una sección debe incluir un callout box informativo\n- La penúltima sección DEBE ser "Conclusión" con CTA a contactar a LabLab\n- La última sección DEBE ser "Preguntas frecuentes" con exactamente 5 preguntas relevantes\n\nDevuelve JSON (sin markdown, sin backticks):\n{\n  "titulo_seo": "max 60 chars, keyword al inicio, año 2026",\n  "meta_description": "max 155 chars",\n  "slug": "slug-corto",\n  "extracto": "2 oraciones resumen",\n  "focus_keyword": "' + tema.kw.split(',')[0].trim() + '",\n  "tags": ["' + tema.kw.split(',')[0].trim() + '", "outplacement Chile", "transición laboral"],\n  "parrafo_gancho": "Instrucción breve de qué debe decir el párrafo gancho inicial",\n  "secciones": [\n    {"h2": "Título de la sección", "puntos": ["punto clave 1", "punto clave 2", "punto clave 3"], "incluye_tabla": false, "incluye_callout": false},\n    ...\n  ]\n}'
+  var prompt = 'Genera un outline detallado para un artículo de blog profesional.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026\nNOMBRE EMPRESA: "LabLab"\n\nDebe tener:\n- Un párrafo gancho inicial (sin H2) con situación real o dato del mercado laboral chileno 2026\n- 8-10 secciones H2, cada una con 3-5 puntos clave a desarrollar\n- AL MENOS una sección debe incluir una tabla comparativa\n- AL MENOS una sección debe incluir un callout box informativo\n- La penúltima sección DEBE ser "Conclusión" con CTA a contactar a LabLab\n- La última sección DEBE ser "Preguntas frecuentes" con exactamente 5 preguntas relevantes\n\nDevuelve JSON (sin markdown, sin backticks):\n{\n  "titulo_seo": "max 50 caracteres porque el sitio agrega – LabLab, keyword al inicio",\n  "meta_description": "max 155 chars",\n  "slug": "slug-corto",\n  "extracto": "2 oraciones resumen",\n  "focus_keyword": "' + tema.kw.split(',')[0].trim() + '",\n  "tags": ["' + tema.kw.split(',')[0].trim() + '", "outplacement Chile", "transición laboral"],\n  "parrafo_gancho": "Instrucción breve de qué debe decir el párrafo gancho inicial",\n  "secciones": [\n    {"h2": "Título de la sección", "puntos": ["punto clave 1", "punto clave 2", "punto clave 3"], "incluye_tabla": false, "incluye_callout": false},\n    ...\n  ]\n}'
 
   var r = await fetchRetry('https://api.openai.com/v1/chat/completions', {
     method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
@@ -293,7 +295,7 @@ async function generarSeccion(tema, outline, seccion, index, total) {
 }
 
 function buildUserPrompt(tema) {
-  return 'ESCRIBE UN ARTÍCULO DE BLOG PROFESIONAL Y BIEN DISEÑADO.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026 (todo el contenido debe ser actual, NUNCA mencionar años anteriores como actuales)\n\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\n' + ESTILOS_INLINE + '\n\nESTRUCTURA OBLIGATORIA:\n1. NO H1 (WordPress lo genera). Párrafo gancho con situación real o dato del mercado laboral chileno de 2026.\n2. Mínimo 6 H2, cada uno 200-400 palabras. H3 donde aplique.\n3. AL MENOS una tabla HTML con los estilos de arriba.\n4. AL MENOS un callout box.\n5. H2 "Conclusión" con CTA a <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n6. H2 "Preguntas frecuentes" con 5 preguntas como H3.\n\n' + LINKS_INTERNOS + '\n\nEXTENSIÓN: Mínimo 1.500 palabras. contenido_html mínimo 6.000 caracteres.\n\nJSON (sin markdown, sin backticks):\n{"titulo_seo":"max 60 chars, keyword al inicio, año 2026","meta_description":"max 155 chars","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2 style=...>...</h2><p style=...>...</p>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","transición laboral"]}'
+  return 'ESCRIBE UN ARTÍCULO DE BLOG PROFESIONAL Y BIEN DISEÑADO.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo + '\nAÑO: 2026 (todo el contenido debe ser actual, NUNCA mencionar años anteriores como actuales)\n\nNOMBRE EMPRESA: "LabLab" (siempre capitalizado así)\n\n' + ESTILOS_INLINE + '\n\nESTRUCTURA OBLIGATORIA:\n1. NO H1 (WordPress lo genera). Párrafo gancho con situación real o dato del mercado laboral chileno de 2026.\n2. Mínimo 6 H2, cada uno 200-400 palabras. H3 donde aplique.\n3. AL MENOS una tabla HTML con los estilos de arriba.\n4. AL MENOS un callout box.\n5. H2 "Conclusión" con CTA a <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n6. H2 "Preguntas frecuentes" con 5 preguntas como H3.\n\n' + LINKS_INTERNOS + '\n\nEXTENSIÓN: Mínimo 1.500 palabras. contenido_html mínimo 6.000 caracteres.\n\nJSON (sin markdown, sin backticks):\n{"titulo_seo":"max 50 caracteres porque el sitio agrega – LabLab, keyword al inicio","meta_description":"max 155 chars","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2 style=...>...</h2><p style=...>...</p>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","transición laboral"]}'
 }
 
 // ═══ QA GATE ═══
@@ -377,7 +379,7 @@ function kwCubierta(kw, tituloNorm) {
 }
 
 function slugBase(s) {
-  return (s||'').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '')
+  return (s||'').replace(/-consolidado$/, '').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '')
 }
 
 // ═══ MAIN ═══
@@ -399,7 +401,7 @@ async function main() {
 
   var existRaw = []
   for (var pag = 1; pag <= 5; pag++) {
-    var res1 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?per_page=100&page=' + pag + '&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
+    var res1 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?status=publish,draft&per_page=100&page=' + pag + '&_fields=title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
     var lote = await res1.json()
     if (!Array.isArray(lote) || !lote.length) break
     existRaw = existRaw.concat(lote)
@@ -443,8 +445,10 @@ async function main() {
       await new Promise(function(r) { setTimeout(r, 3000) })
       outline = await generarOutline(tema)
     }
+    outline.titulo_seo = await asegurarTitulo(outline.titulo_seo, OPENAI_KEY, fetch)
     var repetido = existSlugs.some(function(s) { return slugBase(s) === slugBase(outline.slug) }) ||
-      existTitles.some(function(e) { return similarity(e, outline.titulo_seo) > 0.6 })
+      existTitles.some(function(e) { return similarity(e, outline.titulo_seo) > 0.6 }) ||
+      !!temaPublicado(outline.titulo_seo, existTitles)
     if (!repetido) break
     console.log('  ⚠️ Tema ya publicado ("' + outline.titulo_seo + '"). Probando otro tema...')
     outline = null

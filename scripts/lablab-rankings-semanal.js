@@ -1,4 +1,5 @@
 require('./lib/correo') // correos por Gmail (ver scripts/lib/correo.js)
+var asegurarTitulo = require('./lib/titulo').asegurarTitulo
 // lablab-rankings-semanal.js
 // Genera 1 artículo de ranking/guía exhaustiva semanal para lablab.cl
 // Corre cada viernes via GitHub Actions
@@ -199,24 +200,7 @@ var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recu
 // GPT reescribe los títulos ("Liderazgo en crisis..." → "Liderazgo Crisis Chile 2026: Retener Talento"), así que comparar
 // títulos exactos o slugs deja pasar el mismo tema. Se compara por raíces (5 letras) de las palabras relevantes:
 // si un título publicado contiene 2/3 o más de las raíces del tema (mínimo 2), el tema ya está cubierto.
-var VACIAS_DUP = 'para como cual cuales guia completa clave claves chile 2026 2025 2024 2023 tus sus los las del con que mejores mejor top ranking todo debes saber paso'.split(' ')
-function raicesTema(t) {
-  return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ').split(/\s+/)
-    .filter(function(w) { return w.length > 3 && !/^\d+$/.test(w) && VACIAS_DUP.indexOf(w) === -1 })
-    .map(function(w) { return w.substring(0, 5) })
-    .filter(function(w, i, a) { return a.indexOf(w) === i })
-}
-function temaPublicado(texto, titulosExistentes) {
-  var r = raicesTema(texto)
-  if (r.length < 2) return null
-  for (var i = 0; i < titulosExistentes.length; i++) {
-    var e = raicesTema(titulosExistentes[i])
-    var comunes = r.filter(function(w) { return e.indexOf(w) !== -1 }).length
-    // Cubierto si el existente contiene 2/3 del tema, o si el tema contiene 2/3 de un existente de 3+ raíces
-    if (comunes >= 2 && (comunes / r.length >= 0.66 || (e.length >= 3 && comunes / e.length >= 0.66))) return titulosExistentes[i]
-  }
-  return null
-}
+var temaPublicado = require('./lib/duplicados').temaPublicado
 async function todosLosPosts(url, headers) {
   var todos = []
   for (var pag = 1; pag <= 10; pag++) {
@@ -238,7 +222,7 @@ async function main() {
 
   var blogCatId = await ensureBlogCategory()
 
-  var existRaw = await todosLosPosts(WP_URL + '/wp-json/wp/v2/posts', { Authorization: AUTH, 'User-Agent': UA })
+  var existRaw = await todosLosPosts(WP_URL + '/wp-json/wp/v2/posts?status=publish,draft', { Authorization: AUTH, 'User-Agent': UA })
   var existTitles = existRaw.map(function(p) { return p.title.rendered })
   var existSlugs = existRaw.map(function(p) { return p.slug })
 
@@ -256,7 +240,7 @@ async function main() {
 
   var userPrompt = 'ESCRIBE UN ARTÍCULO DE RANKING/GUÍA EXHAUSTIVA.\n\nTEMA: ' + tema.titulo + '\nKEYWORDS: ' + tema.kw + '\nTIPO: ' + tema.tipo
     + '\n\nESTILOS INLINE OBLIGATORIOS EN TODO EL HTML:\n- H2: style="color:#1a365d;font-size:24px;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0"\n- H3: style="color:#2d3748;font-size:18px;margin:24px 0 12px"\n- Párrafos: style="line-height:1.8;margin-bottom:16px;color:#2d3748"\n- Listas UL: style="margin:16px 0;padding-left:24px;line-height:1.8"\n- LI: style="margin-bottom:8px;color:#2d3748"\n- Links: style="color:#2b6cb0;font-weight:500;text-decoration:underline"\n- Tablas: <table style="width:100%;border-collapse:collapse;margin:24px 0;font-size:15px;box-shadow:0 1px 2px rgba(0,0,0,0.06)"><thead><tr><th style="background:#1a365d;color:white;padding:12px 16px;text-align:left;font-weight:600">...</th></tr></thead><tbody><tr><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr><tr style="background:#f7fafc"><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr></tbody></table>\n- Callout: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0"><strong>Dato clave:</strong> texto</div>'
-    + '\n\nESTRUCTURA:\n1. NO H1. Párrafo gancho con dato impactante del mercado laboral chileno.\n2. H2 con metodología o contexto (si es ranking).\n3. Cada item del ranking como H3 con 200+ palabras, citando datos, criterios, ventajas.\n4. H2 "Tabla comparativa" con tabla HTML <table> completa.\n5. H2 de análisis: "Qué considerar para tu decisión" con H3 por criterio.\n6. H2 "Conclusión" con CTA a <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n7. H2 "Preguntas frecuentes" con 8 preguntas como H3, respuestas de 4-5 oraciones.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas, +15.000 personas, tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n\nLINKS INTERNOS (mínimo 3):\n- <a href="/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para empresas</a>\n- <a href="/servicios-para-personas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para personas</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">contacto</a>\n\nEXTENSIÓN: Mínimo 3.500 palabras. contenido_html mínimo 10.000 caracteres.\n\nJSON (sin backticks):\n{"titulo_seo":"max 60","meta_description":"max 155","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2>...</h2>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","ranking"]}'
+    + '\n\nESTRUCTURA:\n1. NO H1. Párrafo gancho con dato impactante del mercado laboral chileno.\n2. H2 con metodología o contexto (si es ranking).\n3. Cada item del ranking como H3 con 200+ palabras, citando datos, criterios, ventajas.\n4. H2 "Tabla comparativa" con tabla HTML <table> completa.\n5. H2 de análisis: "Qué considerar para tu decisión" con H3 por criterio.\n6. H2 "Conclusión" con CTA a <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:bold">contactar a LabLab</a>.\n7. H2 "Preguntas frecuentes" con 8 preguntas como H3, respuestas de 4-5 oraciones.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas, +15.000 personas, tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n\nLINKS INTERNOS (mínimo 3):\n- <a href="/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">LabLab</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para empresas</a>\n- <a href="/servicios-para-personas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">servicios para personas</a>\n- <a href="/servicios-para-empresas/" style="color:#2b6cb0;font-weight:500;text-decoration:underline">contacto</a>\n\nEXTENSIÓN: Mínimo 3.500 palabras. contenido_html mínimo 10.000 caracteres.\n\nJSON (sin backticks):\n{"titulo_seo":"max 50 caracteres porque el sitio agrega – LabLab, keyword al inicio","meta_description":"max 155","slug":"slug-corto","extracto":"2 oraciones","contenido_html":"<h2>...</h2>...","focus_keyword":"' + tema.kw.split(',')[0].trim() + '","tags":["' + tema.kw.split(',')[0].trim() + '","outplacement Chile","ranking"]}'
 
   console.log('\nGenerando ranking...')
   var r = await fetchRetry('https://api.openai.com/v1/chat/completions', {
@@ -282,10 +266,14 @@ async function main() {
   }
   console.log('HTML: ' + (art.contenido_html||'').length + ' chars')
 
-  // Verificar slug no duplicado
-  if (existSlugs.includes(art.slug)) {
-    art.slug = art.slug + '-' + new Date().toISOString().split('T')[0].replace(/-/g, '')
-    console.log('  Slug duplicado, ajustado a: ' + art.slug)
+  // Título ≤ 51 (el <title> agrega " – LabLab") y nada de temas repetidos (16 oct 2026: antes se agregaba -fecha al slug y se duplicaba)
+  art.titulo_seo = await asegurarTitulo(art.titulo_seo, OPENAI_KEY, fetch)
+  var baseSlug = function(s) { return String(s || '').replace(/-consolidado$/, '').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '') }
+  var yaCubierto = temaPublicado(art.titulo_seo, existTitles)
+  if (existSlugs.some(function(s) { return baseSlug(s) === baseSlug(art.slug) }) || yaCubierto) {
+    console.log('  ❌ Tema ya publicado (' + (yaCubierto || art.slug) + '). No se publica para evitar duplicado.')
+    process.exitCode = 1
+    return
   }
 
   // QA loop
