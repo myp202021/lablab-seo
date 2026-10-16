@@ -5,6 +5,12 @@ on:
       script:
         description: "script a correr (en scripts/)"
         default: "h1-portada-2026-10-15.js"
+      modo:
+        description: "MODO (según el script: respaldo / una / aplicar ...)"
+        default: "respaldo"
+      solo:
+        description: "SOLO (id para pruebas de un elemento)"
+        default: ""
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -20,6 +26,8 @@ jobs:
           PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
           LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
           LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+          MODO: ${{ inputs.modo }}
+          SOLO: ${{ inputs.solo }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
