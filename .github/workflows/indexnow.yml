@@ -1,0 +1,15 @@
+name: "IndexNow: publicar clave y avisar todas las URL"
+on:
+  workflow_dispatch:
+jobs:
+  indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - env:
+          LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
+          LABLAB_WP_APP_PASSWORD: ${{ secrets.LABLAB_WP_APP_PASSWORD }}
+        run: node scripts/indexnow-todo.js

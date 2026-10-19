@@ -51,19 +51,10 @@ async function fetchRetry(url, opts, retries) {
 }
 
 // ═══ INDEXNOW ═══
+// 19 oct 2026: la clave fija 'lablab2026indexnow' nunca estuvo publicada en el sitio (404) y los avisos se rechazaban.
+// Ahora lib/indexnow.js publica la clave si falta y avisa (regla M&P: todos los agentes con IndexNow).
 async function pingIndexNow(url) {
-  try {
-    var r = await fetch('https://api.indexnow.org/indexnow', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        host: 'www.lablab.cl',
-        key: 'lablab2026indexnow',
-        urlList: [url]
-      })
-    })
-    console.log('  IndexNow: ' + r.status + ' ' + r.statusText)
-  } catch(e) { console.log('  IndexNow error (no crítico): ' + e.message) }
+  await require('./lib/indexnow').avisarIndexNow(WP_URL, '434d50eeb044c41d60e514bf9243b624', [url], AUTH)
 }
 
 async function pingSitemap() {
