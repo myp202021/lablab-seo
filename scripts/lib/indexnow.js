@@ -43,6 +43,11 @@ async function publicarClave(sitio, clave, auth, log) {
 async function avisarIndexNow(sitio, clave, urls, auth, log) {
   log = log || console.log
   try {
+    // Si el sitio tiene el plugin oficial IndexNow (Microsoft), se usa su clave, que ya está publicada por el plugin
+    if (auth) {
+      var pl = await req(sitio + '/wp-json/indexnow/v_1.0.4/apiKey', { headers: { Authorization: auth } })
+      if (pl.s === 200 && pl.j && pl.j.APIKey) clave = pl.j.APIKey
+    }
     var ok = await claveEnSitio(sitio, clave)
     if (!ok && auth) ok = await publicarClave(sitio, clave, auth, log)
     if (!ok) { log('  IndexNow: la clave no está publicada en ' + sitio + '/' + clave + '.txt — no se avisa'); return false }
