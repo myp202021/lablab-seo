@@ -10,6 +10,7 @@ var temaPublicado = require('./lib/duplicados').temaPublicado
 // Requiere: OPENAI_API_KEY, LABLAB_WP_USER, LABLAB_WP_APP_PASSWORD, LABLAB_WP_URL
 
 var fetch = require('node-fetch')
+var largo = require('./lib/largo')
 
 var WP_URL = process.env.LABLAB_WP_URL || 'https://www.lablab.cl'
 var WP_USER = process.env.LABLAB_WP_USER
@@ -523,6 +524,9 @@ async function main() {
   //   mediaId = await subirImagenWP(imgBuf, art.titulo_seo || tema.titulo)
   // }
 
+  // M&P 19 oct 2026, regla para TODOS los agentes de blog: mínimo 3.000 palabras; si falta, se escribe por secciones y se une (lib/largo.js).
+  art.contenido_html = await largo.asegurarLargo(art.contenido_html, { tema: art.titulo_seo, sistema: typeof SYSTEM_PROMPT !== 'undefined' ? SYSTEM_PROMPT : '' })
+  largo.exigirLargo(art.contenido_html)
   console.log('\nPublicando...')
   var postBody = {
     title: art.titulo_seo, slug: art.slug, content: art.contenido_html, excerpt: art.extracto,
