@@ -56,6 +56,27 @@ async function guardar(pag, parent) {
     fs.writeFileSync('respaldo-estudios-render.json', JSON.stringify(rev, null, 1))
     return
   }
+  if (MODO === 'publicar') { // 21 oct: OK de Christopher. Índice primero, luego hijas; después "Estudios" en el menú principal
+    var ids = [9502, 9503, 9504, 9505]
+    for (var id of ids) { var pu = await L.wp('/wp-json/wp/v2/pages/' + id, { status: 'publish' }, 'POST'); console.log('publicado', id, pu.s, pu.j && pu.j.status, pu.j && pu.j.link) }
+    var menus = await L.wp('/wp-json/wp/v2/menus?_fields=id,name,locations')
+    console.log('menús', JSON.stringify(menus.j))
+    var principal = (Array.isArray(menus.j) ? menus.j : []).find(function (m) { return (m.locations || []).indexOf('primary') !== -1 })
+    if (principal) {
+      var items = await L.wp('/wp-json/wp/v2/menu-items?menus=' + principal.id + '&per_page=100&_fields=id,title,parent,menu_order,object_id')
+      var lista = Array.isArray(items.j) ? items.j : []
+      if (lista.some(function (i) { return Number(i.object_id) === 9502 })) console.log('menú: Estudios ya estaba')
+      else {
+        var orden = Math.max.apply(null, lista.filter(function (i) { return !i.parent }).map(function (i) { return i.menu_order }).concat([0])) + 1
+        var mi = await L.wp('/wp-json/wp/v2/menu-items', { title: 'Estudios', menus: principal.id, object: 'page', object_id: 9502, type: 'post_type', status: 'publish', menu_order: orden }, 'POST')
+        console.log('menú: Estudios agregado', mi.s, mi.j && mi.j.id, 'orden', orden)
+      }
+    } else console.log('menú: no encontré el menú "primary"; agregar a mano en Apariencia › Menús')
+    for (var u of ['/estudios/', '/estudios/impacto-outplacement-recolocacion-cadem/', '/estudios/costo-desvinculaciones-judicializadas-chile/', '/estudios/outplacement-marca-empleadora-rankings/']) {
+      var v2 = await L.enVivo('https://www.lablab.cl' + u); console.log('en vivo', v2.status, u)
+    }
+    return
+  }
   if (MODO !== 'borradores') return
 
   var out = []

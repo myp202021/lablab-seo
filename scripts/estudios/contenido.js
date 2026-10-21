@@ -32,6 +32,7 @@ var ESTILO = '<style>' +
   '.ll-card{border:1px solid #e6e6e6;border-top:4px solid #f92a37;border-radius:8px;padding:22px;background:#fff;display:flex;flex-direction:column}' +
   '.ll-card h2,.ll-card h3{font-size:1.2rem;margin:0 0 8px;color:' + OSCURO + '}.ll-card .ll-meta{font-size:.85rem;color:#666;margin-bottom:10px}' +
   '.ll-card p{flex:1}.ll-card a.ll-boton{display:inline-block;background:#f92a37;color:#fff;padding:8px 16px;border-radius:99px;font-weight:bold;text-decoration:none;align-self:flex-start}' +
+  '.ll-citables{background:#fff5f5;border:1px solid #ffd2d5;border-radius:8px;padding:6px 22px 10px;margin:10px 0 24px}.ll-citables h2{margin-top:14px!important}' +
   '</style>'
 
 function stats(items) {
@@ -97,6 +98,10 @@ function otrosEstudios(actual) {
   var otros = Object.keys(E).filter(function (k) { return k !== actual })
   return '<h2>Otros estudios LabLab</h2>' + ul(otros.map(function (k) { return '<a href="' + url(k) + '">' + E[k].h1 + '</a> — ' + E[k].tarjeta }))
 }
+// GEO (21 oct): frases autocontenidas con dato, fuente y fecha, para que buscadores con IA puedan citarlas tal cual
+function citables(frases) {
+  return '<div class="ll-citables"><h2>Datos clave</h2><ul>' + frases.map(function (f) { return '<li>' + f + '</li>' }).join('') + '</ul></div>'
+}
 function cta(texto) {
   return '<div class="ll-cta"><h2>¿Cómo aplica esto a tu organización?</h2><p>' + texto + '</p><p><a href="/servicios-para-empresas/">Servicios de outplacement para empresas</a> · <a href="/servicios-para-personas/">Programas para personas</a> · <a href="/estudios/">Todos los estudios</a></p></div>'
 }
@@ -104,7 +109,8 @@ function report(k, extra) {
   var e = E[k]
   return Object.assign({
     '@type': 'Report', '@id': SITIO + url(k) + '#estudio', headline: e.h1, name: e.h1, description: e.meta,
-    url: SITIO + url(k), mainEntityOfPage: SITIO + url(k), inLanguage: 'es-CL', datePublished: e.fecha,
+    url: SITIO + url(k), mainEntityOfPage: SITIO + url(k), inLanguage: 'es-CL', datePublished: e.fecha, dateModified: '2026-10-21',
+    keywords: e.keywords || undefined,
     author: ORG_FULL, publisher: ORG_FULL, isPartOf: { '@id': SITIO + '/estudios/#coleccion' },
     spatialCoverage: { '@type': 'Country', name: 'Chile' }
   }, extra || {})
@@ -125,6 +131,12 @@ function paginaCadem() {
     ['40,4% vs 24,0%', 'Recolocación a 4 meses: programa LabLab vs. grupo sin outplacement (+16,4 pp)'],
     ['240', 'Personas desvinculadas sin outplacement encuestadas por Cadem (90 + 150)'],
     ['Feb–mar 2026', 'Trabajo de campo telefónico']
+  ])
+  h += citables([
+    'Según un estudio de Cadem para LabLab (abril de 2026), el 93,2% de las personas que hicieron el programa de outplacement de 12 meses de LabLab se recolocó, frente al 41,1% de las personas desvinculadas en Chile que no hicieron outplacement.',
+    'En el programa de outplacement de 4 meses de LabLab, la recolocación fue de 40,4%, frente a 24,0% sin outplacement (Cadem para LabLab, abril de 2026).',
+    'La diferencia de recolocación entre el outplacement de LabLab y no hacer outplacement es de 52,1 puntos porcentuales a 12 meses y de 16,4 puntos a 4 meses.',
+    'Cadem encuestó por teléfono a 240 personas desvinculadas sin outplacement entre febrero y marzo de 2026, con muestreo no probabilístico.'
   ])
   h += '<h2>Resumen ejecutivo</h2>'
   h += '<p>LabLab encargó a Cadem determinar la tasa de recolocación de profesionales que quedaron sin trabajo y que no realizaron ningún programa de outplacement, para compararla con la tasa y los tiempos de recolocación logrados por los programas de outplacement de LabLab y establecer si hay o no un impacto a la hora de encontrar un nuevo empleo.</p>'
@@ -228,6 +240,12 @@ function paginaDesv() {
     ['Más de 90%', 'De los casos que llegan a fallo terminan a favor del trabajador'],
     ['96.808', 'Causas laborales ingresadas al Poder Judicial en 2024; 70,2% por necesidades de la empresa'],
     ['54.455', 'Juicios laborales ingresados en el primer semestre de 2025, más de 5.000 sobre igual período de 2024']
+  ])
+  h += citables([
+    'Según el modelo de LabLab con datos de la Dirección del Trabajo y del Poder Judicial, que un despido termine en juicio laboral le cuesta a una empresa en Chile en promedio $6,6 millones por sobre el finiquito ($6.694.862).',
+    'En Chile, más del 90% de los juicios laborales por despido que llegan a fallo terminan a favor del trabajador (estudio LabLab con datos del Poder Judicial).',
+    'En 2024 ingresaron 96.808 causas laborales al Poder Judicial de Chile; el 70,2% fue por la causal necesidades de la empresa (artículo 161 del Código del Trabajo).',
+    'En el primer semestre de 2025 ingresaron 54.455 juicios laborales en Chile, más de 5.000 sobre el mismo período de 2024.'
   ])
   h += '<h2>Resumen ejecutivo</h2><p>En Chile, la gestión de las desvinculaciones es uno de los principales desafíos para las empresas. A partir de los datos de la Dirección del Trabajo (DT) y del Poder Judicial (PJud), considerando las causales susceptibles de judicialización, LabLab desarrolló un modelo estadístico que asigna la probabilidad de demanda por causal y estima el costo esperado de judicialización en cada rama de un árbol de decisiones: si hay juicio o no, el tipo de término (sentencia, avenimiento, conciliación, acoge demanda monitorio u otros) y quién resulta favorecido.</p>'
   h += ul([
@@ -374,6 +392,12 @@ function paginaMarca() {
     ['2,2 a 4,5', 'Posiciones más arriba, en promedio, que las empresas sin outplacement'],
     ['86', 'Empresas únicas analizadas en tres rankings'],
     ['3 de 3', 'Rankings en que los clientes LabLab tienen mejor posición promedio']
+  ])
+  h += citables([
+    'Según un estudio de LabLab (mayo de 2026), el 72% de las 86 empresas mejor rankeadas en marca empleadora en Chile contrata outplacement.',
+    'Las empresas que contratan outplacement aparecen en promedio entre 2,2 y 4,5 lugares más arriba en los rankings de marca empleadora de Chile que las que no lo contratan (Great Place to Work, LinkedIn Top Companies y Merco Talento).',
+    'En los tres rankings analizados, las empresas clientes de LabLab tienen mejor posición promedio que las clientes de otros proveedores de outplacement.',
+    'El estudio muestra una relación entre outplacement y marca empleadora, no una relación de causa y efecto.'
   ])
   h += '<h2>Resumen ejecutivo</h2><p>El estudio analiza la relación entre las empresas que contratan servicios de outplacement y su posición en los principales rankings de imagen empleadora de Chile. Cubre 86 empresas únicas presentes en tres fuentes independientes: Great Place to Work Chile (2022–2024), LinkedIn Top Companies Chile (2023) y el top 30 de Merco Talento Chile (2023–2025). Las empresas se clasificaron en tres grupos: clientes LabLab, clientes de otros proveedores y empresas sin outplacement entre sus beneficios.</p>'
   h += ul([
