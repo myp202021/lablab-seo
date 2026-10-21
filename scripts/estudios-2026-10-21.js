@@ -43,6 +43,19 @@ async function guardar(pag, parent) {
     var ex = await buscar(s, null)
     console.log('slug', s, ex ? ('EXISTE id ' + ex.id + ' ' + ex.status) : 'libre')
   }
+  if (MODO === 'revisar') { // HTML ya procesado por WordPress (shortcodes de Flatsome + wpautop)
+    var rev = []
+    for (var id of (process.env.SOLO || '').split(',').filter(Boolean)) {
+      var g = await L.wp('/wp-json/wp/v2/pages/' + id + '?context=edit&_fields=id,status,content')
+      var html = g.j.content.rendered
+      console.log('revisar', id, g.j.status, '| h1:', (html.match(/<h1/g) || []).length, '| shortcodes sin procesar:', (html.match(/\[\/?(section|row|col)/g) || []).length,
+        '| tablas:', (html.match(/<table/g) || []).length, '| <br> dentro de tablas:', (html.match(/<table[\s\S]*?<\/table>/g) || []).join('').split('<br').length - 1,
+        '| <p> vacíos:', (html.match(/<p>\s*<\/p>/g) || []).length, '| ld+json:', (html.match(/application\/ld\+json/g) || []).length, '| clases section:', (html.match(/class="section/g) || []).length)
+      rev.push({ id: id, rendered: html })
+    }
+    fs.writeFileSync('respaldo-estudios-render.json', JSON.stringify(rev, null, 1))
+    return
+  }
   if (MODO !== 'borradores') return
 
   var out = []
