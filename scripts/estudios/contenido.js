@@ -1,7 +1,9 @@
 // Contenido de la sección "Estudios LabLab" (21 oct 2026).
 // Fuente: PDFs de LabLab en Drive (Compartido Agencia M&P › Recursos). Cifras tal cual del PDF; nada externo.
 var SITIO = 'https://www.lablab.cl'
-var AZUL = '#3b5f8b'
+// Colores de LabLab (21 oct, Christopher: "ese azul no es LabLab"): rojo del menú y pie del sitio + gris oscuro
+var ROJO = '#f92a37'
+var OSCURO = '#222222'
 var ORG = { '@id': SITIO + '/#organizacion' }
 var ORG_FULL = { '@type': 'Organization', '@id': SITIO + '/#organizacion', name: 'LabLab', url: SITIO + '/', logo: SITIO + '/wp-content/uploads/2024/03/Logo_3-1-1.png' }
 var CADEM = { '@type': 'Organization', name: 'Cadem', url: 'https://www.cadem.cl/' }
@@ -11,24 +13,24 @@ function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').
 var ESTILO = '<style>' +
   '.ll-hero .ll-migas{font-size:.85rem;opacity:.9;margin-bottom:10px}.ll-hero .ll-migas a{color:#fff;text-decoration:underline}' +
   '.ll-hero .ll-kicker{text-transform:uppercase;letter-spacing:.06em;font-size:.85rem;font-weight:bold;margin-bottom:6px}' +
-  '.ll-hero h1{font-size:2.3rem;line-height:1.2;margin-bottom:14px}.ll-hero p.ll-bajada{font-size:1.15rem;max-width:820px}' +
+  '.ll-hero-in{max-width:920px;margin:0 auto;text-align:center}.ll-hero h1{font-size:2.3rem;line-height:1.2;margin-bottom:14px;color:#fff}.ll-hero p.ll-bajada{font-size:1.15rem;max-width:760px;margin:0 auto}' +
   '@media(max-width:549px){.ll-hero h1{font-size:1.7rem}}' +
   '.ll-est{max-width:920px;margin:0 auto;font-size:1.04rem;line-height:1.7}' +
-  '.ll-est h2{color:' + AZUL + ';margin-top:2.4rem;font-size:1.6rem}.ll-est h3{color:' + AZUL + ';margin-top:1.5rem;font-size:1.2rem}' +
+  '.ll-est h2{color:' + OSCURO + ';margin-top:2.4rem;font-size:1.6rem}.ll-est h3{color:' + OSCURO + ';margin-top:1.5rem;font-size:1.2rem}' +
   '.ll-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:8px 0 28px}' +
-  '.ll-stat{background:#f4f7fb;border-left:4px solid #f92a37;padding:16px 18px;border-radius:6px}' +
-  '.ll-stat b{display:block;font-size:1.9rem;line-height:1.15;color:' + AZUL + '}.ll-stat span{display:block;font-size:.92rem;margin-top:6px;line-height:1.45}' +
+  '.ll-stat{background:#f6f6f6;border-left:4px solid #f92a37;padding:16px 18px;border-radius:6px}' +
+  '.ll-stat b{display:block;font-size:1.9rem;line-height:1.15;color:' + OSCURO + '}.ll-stat span{display:block;font-size:.92rem;margin-top:6px;line-height:1.45}' +
   '.ll-tabla{overflow-x:auto;margin:10px 0 8px}.ll-tabla table{width:100%;border-collapse:collapse;font-size:.95rem;min-width:480px}' +
   '.ll-tabla caption{text-align:left;font-weight:bold;padding:6px 0;color:#333}' +
-  '.ll-tabla th{background:' + AZUL + ';color:#fff;text-align:left;padding:8px 10px;font-weight:bold}' +
-  '.ll-tabla td{border-bottom:1px solid #e3e8ef;padding:8px 10px;vertical-align:top}' +
+  '.ll-tabla th{background:' + ROJO + ';color:#fff;text-align:left;padding:8px 10px;font-weight:bold}' +
+  '.ll-tabla td{border-bottom:1px solid #e6e6e6;padding:8px 10px;vertical-align:top}' +
   '.ll-nota{font-size:.88rem;color:#555;margin-bottom:18px}' +
-  '.ll-ficha{background:#f4f7fb;border-radius:8px;padding:6px 18px 12px;margin-top:10px}' +
+  '.ll-ficha{background:#f6f6f6;border-radius:8px;padding:6px 18px 12px;margin-top:10px}' +
   '.ll-faq h3{font-size:1.08rem}' +
-  '.ll-cta{background:' + AZUL + ';color:#fff;padding:24px 26px;border-radius:8px;margin:36px 0 10px}.ll-cta h2{color:#fff!important;margin-top:0}.ll-cta a{color:#fff;text-decoration:underline;font-weight:bold}' +
+  '.ll-cta{background:' + ROJO + ';color:#fff;padding:24px 26px;border-radius:8px;margin:36px 0 10px}.ll-cta h2{color:#fff!important;margin-top:0}.ll-cta a{color:#fff;text-decoration:underline;font-weight:bold}' +
   '.ll-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin:20px 0}' +
-  '.ll-card{border:1px solid #e3e8ef;border-top:4px solid #f92a37;border-radius:8px;padding:22px;background:#fff;display:flex;flex-direction:column}' +
-  '.ll-card h2,.ll-card h3{font-size:1.2rem;margin:0 0 8px;color:' + AZUL + '}.ll-card .ll-meta{font-size:.85rem;color:#666;margin-bottom:10px}' +
+  '.ll-card{border:1px solid #e6e6e6;border-top:4px solid #f92a37;border-radius:8px;padding:22px;background:#fff;display:flex;flex-direction:column}' +
+  '.ll-card h2,.ll-card h3{font-size:1.2rem;margin:0 0 8px;color:' + OSCURO + '}.ll-card .ll-meta{font-size:.85rem;color:#666;margin-bottom:10px}' +
   '.ll-card p{flex:1}.ll-card a.ll-boton{display:inline-block;background:#f92a37;color:#fff;padding:8px 16px;border-radius:99px;font-weight:bold;text-decoration:none;align-self:flex-start}' +
   '</style>'
 
@@ -54,8 +56,8 @@ function migas(items) {
   return { '@type': 'BreadcrumbList', itemListElement: items.map(function (it, i) { return { '@type': 'ListItem', position: i + 1, name: it[0], item: SITIO + it[1] } }) }
 }
 function hero(migasHtml, kicker, h1, bajada) {
-  return '[section bg_color="' + AZUL + '" dark="true" padding="56px" class="ll-hero"][row][col span__sm="12"]' +
-    '<nav class="ll-migas" aria-label="Ruta">' + migasHtml + '</nav><p class="ll-kicker">' + kicker + '</p><h1>' + h1 + '</h1><p class="ll-bajada">' + bajada + '</p>' +
+  return '[section bg_color="' + ROJO + '" dark="true" padding="56px" class="ll-hero"][row][col span__sm="12"]' +
+    '<div class="ll-hero-in"><nav class="ll-migas" aria-label="Ruta">' + migasHtml + '</nav><p class="ll-kicker">' + kicker + '</p><h1>' + h1 + '</h1><p class="ll-bajada">' + bajada + '</p></div>' +
     '[/col][/row][/section]'
 }
 function cuerpo(html) { return '[section padding="40px"][row][col span__sm="12"]<div class="ll-est">' + html + '</div>[/col][/row][/section]' }
