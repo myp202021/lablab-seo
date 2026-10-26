@@ -8,6 +8,16 @@
 var https = require("https");
 
 var MINIMO = 3000;
+// M&P 26 oct 2026 (ahorro OpenAI): si el artículo ya tiene >= 3.000 palabras NO se amplía, y nunca se pasa de 3.500.
+// Modelo fijo gpt-4.1-mini (antes gpt-4.1, llegaba a inflar a 5.600 palabras).
+var TOPE = 3500;
+var MODELO = "gpt-4.1-mini";
+
+// 429 / insufficient_quota / 401 de OpenAI: no se sigue, el script debe fallar (exit != 0).
+function errorFatal(e) {
+  var m = String((e && e.message) || e);
+  return /insufficient_quota|rate_limit|\b429\b|\b401\b|invalid_api_key|Incorrect API key/i.test(m);
+}
 
 function palabras(html) {
   return String(html || "")
@@ -48,7 +58,9 @@ function openai(apiKey, modelo, messages, maxTokens) {
           try {
             var j = JSON.parse(d);
             if (!j.choices)
-              return reject(new Error("OpenAI: " + d.slice(0, 300)));
+              return reject(
+                new Error("OpenAI " + res.statusCode + ": " + d.slice(0, 300)),
+              );
             resolve(
               j.choices[0].message.content
                 .trim()
@@ -80,8 +92,8 @@ function apertura(html, tag) {
 async function asegurarLargo(html, opciones) {
   var o = opciones || {};
   var apiKey = o.apiKey || process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
-  var modelo = o.modelo || "gpt-4.1";
-  var minimo = o.minimo || MINIMO;
+  var modelo = MODELO; // se ignora o.modelo a propósito (ahorro)
+  var minimo = Math.min(o.minimo || MINIMO, TOPE);
   var log = o.log || console.log;
   var sistema = {
     role: "system",
@@ -90,7 +102,7 @@ async function asegurarLargo(html, opciones) {
       "Escribes en español de Chile (o del país del cliente, si las reglas lo dicen), con todas las tildes. NUNCA inventas cifras, precios, estadísticas, nombres, clientes ni casos: amplías con explicación, criterios, pasos, ejemplos de operación y errores comunes.",
   };
   var n = palabras(html);
-  if (n >= minimo) return html;
+  if (n >= Math.min(minimo, MINIMO)) return html;
   log(
     "Largo: " +
       n +
@@ -109,7 +121,9 @@ async function asegurarLargo(html, opciones) {
     650,
     Math.max(320, Math.ceil((minimo * 1.12) / conH2)),
   );
+  var total = n;
   for (var i = 0; i < partes.length; i++) {
+    if (total >= minimo) break; // ya alcanzó el mínimo: no se amplía más
     var p = partes[i];
     if (/<script/i.test(p) || palabras(p) >= objetivo) continue;
     var meta = /^<h2/i.test(p) ? objetivo : Math.min(250, objetivo);
@@ -132,8 +146,13 @@ async function asegurarLargo(html, opciones) {
         ],
         4000,
       );
-      if (palabras(nueva) > palabras(p)) partes[i] = nueva + "\n";
+      var delta = palabras(nueva) - palabras(p);
+      if (delta > 0 && total + delta <= TOPE) {
+        partes[i] = nueva + "\n";
+        total += delta;
+      }
     } catch (e) {
+      if (errorFatal(e)) throw e;
       log("No se pudo ampliar la sección " + i + ": " + e.message);
     }
   }
@@ -174,6 +193,7 @@ async function asegurarLargo(html, opciones) {
           ),
         ).secciones || [];
     } catch (e) {
+      if (errorFatal(e)) throw e;
       log("No se pudo armar el esquema: " + e.message);
       break;
     }
@@ -183,9 +203,10 @@ async function asegurarLargo(html, opciones) {
       ul = apertura(html, "ul"),
       li = apertura(html, "li");
     var nuevas = "";
-    for (var k = 0; k < esquema.length; k++) {
+    var acumulado = n;
+    for (var k = 0; k < esquema.length && acumulado < minimo; k++) {
       try {
-        nuevas +=
+        var seccion =
           (await openai(
             apiKey,
             modelo,
@@ -215,7 +236,11 @@ async function asegurarLargo(html, opciones) {
             ],
             3000,
           )) + "\n";
+        if (acumulado + palabras(seccion) > TOPE) break; // tope duro
+        nuevas += seccion;
+        acumulado += palabras(seccion);
       } catch (e) {
+        if (errorFatal(e)) throw e;
         log('No se pudo escribir "' + esquema[k].h2 + '": ' + e.message);
       }
     }
@@ -246,4 +271,4 @@ function exigirLargo(html, minimo) {
   return n;
 }
 
-module.exports = { asegurarLargo, exigirLargo, palabras, MINIMO };
+module.exports = { asegurarLargo, exigirLargo, palabras, errorFatal, MINIMO, TOPE };
