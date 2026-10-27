@@ -77,7 +77,7 @@ async function generarImagenBuffer(titulo) {
     var r = await fetchRetry('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + OPENAI_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-image-1', prompt: prompt, n: 1, size: '1024x1024', quality: 'low' })
+      body: JSON.stringify({ model: 'gpt-image-1.5', prompt: prompt, n: 1, size: '1024x1024', quality: 'low' })
     })
     var data = await r.json()
     if (!data.data || !data.data[0]) {
