@@ -207,6 +207,13 @@ var TEMAS = [
   { titulo: 'Entrevistas por video y con IA: cómo prepararse', kw: 'entrevista por video, entrevista con inteligencia artificial, entrevista online', tipo: 'guía' },
 ]
 
+
+// Regla Christopher 2 nov 2026: las búsquedas donde el cliente no aparece van primero (data/brechas.json, lo actualiza el informe mensual)
+var BRECHAS = { blog: [], ranking: [] }
+try { BRECHAS = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'brechas.json'), 'utf8')) } catch (e) {}
+var capBr = function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
+BRECHAS.blog.slice().reverse().forEach(function(kw) { TEMAS.unshift({ titulo: capBr(kw) + ': qué saber antes de elegir en 2026', kw: kw, tipo: 'editorial', brecha: true }) })
+
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes para el blog de LabLab. Tu escritura es empática, profesional y basada en datos reales del mercado laboral chileno.\n\nREGLAS CRÍTICAS:\n- El nombre de la empresa es "LabLab" (siempre capitalizado así). NUNCA escribir "Lab Lab", "LABLAB", "lab lab" ni ninguna otra variante.\n- Todo el contenido debe ser actual: año 2026. NUNCA mencionar años anteriores (2023, 2024, 2025) como si fueran actuales.\n- NUNCA mencionar competidores por nombre. Si necesitas comparar, usa descripciones genéricas ("otras consultoras", "firmas internacionales").\n- Párrafos cortos (3-4 oraciones). La gente que lee esto está en un momento de transición profesional.\n- Datos concretos: cifras del mercado laboral chileno, porcentajes de recolocación, plazos reales.\n- Tono: como un consultor senior empático. Profesional pero cercano. Sin jerga innecesaria.\n- CERO frases vacías: nada de "en el complejo mundo de", "cabe señalar", "es importante destacar".\n' +
 '- NUNCA inventar testimonios, citas textuales o casos de éxito ficticios. NO usar frases como "María comentó que...", "Juan, gerente de X, nos dijo...". Si mencionas resultados, usar datos genéricos verificables ("según estudios del mercado", "empresas del rubro reportan").\n- Cita fuentes autoritativas reales con links:\n  * DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n  * INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n  * SENCE: https://www.sence.cl — capacitación, programas de empleo\n  * Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\n- Incluye al menos 1 link externo a fuentes autoritativas en cada artículo.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
 
@@ -417,6 +424,8 @@ async function main() {
     })
     return !slugMatch
   })
+  var conBrecha = disponibles.filter(function(x) { return x.brecha })
+  if (conBrecha.length) disponibles = conBrecha
   if (!disponibles.length) {
     console.log('⚠️ Todos los temas ya fueron cubiertos. Hay que agregar temas nuevos a TEMAS.')
     process.exitCode = 1

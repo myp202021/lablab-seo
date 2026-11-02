@@ -194,6 +194,13 @@ var TEMAS = [
   { titulo: 'Los programas de retiro activo más completos en Chile', kw: 'retiro activo Chile, programas jubilación activa, transición jubilación Chile', tipo: 'ranking' },
 ]
 
+
+// Regla Christopher 2 nov 2026: las búsquedas donde el cliente no aparece van primero (data/brechas.json, lo actualiza el informe mensual)
+var BRECHAS = { blog: [], ranking: [] }
+try { BRECHAS = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'brechas.json'), 'utf8')) } catch (e) {}
+var capBr = function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
+BRECHAS.ranking.slice().reverse().forEach(function(kw) { TEMAS.unshift({ titulo: capBr(kw) + ': ranking y comparación 2026', kw: kw, tipo: 'ranking', brecha: true }) })
+
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes rankings y guías exhaustivas para el blog de LabLab. Tono: analista riguroso pero accesible. Datos verificables del mercado laboral chileno. NUNCA contenido genérico.\n\nREGLAS CRÍTICAS:\n- El nombre es "LabLab" (siempre capitalizado así). NUNCA "Lab Lab", "LABLAB" ni variantes.\n- Todo contenido es de 2026. NUNCA mencionar años anteriores como si fueran actuales.\n- NO mencionar competidores por nombre. Usar descripciones genéricas ("firmas internacionales", "consultoras locales").\n- Tablas HTML con estilos inline profesionales (background en headers, padding, bordes).\n- Usar callout boxes: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0;">...</div>\n\nSIEMPRE cita fuentes autoritativas con links reales:\n- DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n- INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n- SENCE: https://www.sence.cl — capacitación, programas de empleo\n- Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\nIncluye al menos 2 links externos a estas fuentes en cada ranking.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
 
 // ═══ ANTI-DUPLICADOS (30 sept 2026) ═══
@@ -229,6 +236,8 @@ async function main() {
   var disponibles = TEMAS.filter(function(t) {
     return !existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 }) && !temaPublicado(t.titulo, existTitles)
   })
+  var conBrecha = disponibles.filter(function(x) { return x.brecha })
+  if (conBrecha.length) disponibles = conBrecha
   // Antes: si se agotaban, se reiniciaba la lista y se publicaban rankings repetidos
   if (!disponibles.length) {
     console.log('⚠️ Todos los rankings ya están publicados. Agregar temas nuevos a TEMAS.')
