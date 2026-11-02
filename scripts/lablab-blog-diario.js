@@ -451,7 +451,7 @@ async function main() {
     outline.titulo_seo = await asegurarTitulo(outline.titulo_seo, OPENAI_KEY, fetch)
     var repetido = existSlugs.some(function(s) { return slugBase(s) === slugBase(outline.slug) }) ||
       existTitles.some(function(e) { return similarity(e, outline.titulo_seo) > 0.6 }) ||
-      !!temaPublicado(outline.titulo_seo, existTitles)
+      (!tema.qa && !!temaPublicado(outline.titulo_seo, existTitles))
     if (!repetido) break
     console.log('  ⚠️ Tema ya publicado ("' + outline.titulo_seo + '"). Probando otro tema...')
     outline = null

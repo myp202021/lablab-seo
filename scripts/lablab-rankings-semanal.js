@@ -235,7 +235,7 @@ async function main() {
   var existSlugs = existRaw.map(function(p) { return p.slug })
 
   var disponibles = TEMAS.filter(function(t) {
-    return !existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 }) && !temaPublicado(t.titulo, existTitles)
+    return !existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 }) && (t.qa || !temaPublicado(t.titulo, existTitles))
   })
   var conBrecha = disponibles.filter(function(x) { return x.brecha })
   if (conBrecha.length) disponibles = conBrecha
@@ -280,7 +280,7 @@ async function main() {
   if (tema.qa) { art.titulo_seo = tema.titulo; art.slug = String(tema.titulo).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) }
   art.titulo_seo = await asegurarTitulo(art.titulo_seo, OPENAI_KEY, fetch)
   var baseSlug = function(s) { return String(s || '').replace(/-consolidado$/, '').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '') }
-  var yaCubierto = temaPublicado(art.titulo_seo, existTitles)
+  var yaCubierto = tema.qa ? null : temaPublicado(art.titulo_seo, existTitles)
   if (existSlugs.some(function(s) { return baseSlug(s) === baseSlug(art.slug) }) || yaCubierto) {
     console.log('  ❌ Tema ya publicado (' + (yaCubierto || art.slug) + '). No se publica para evitar duplicado.')
     process.exitCode = 1
