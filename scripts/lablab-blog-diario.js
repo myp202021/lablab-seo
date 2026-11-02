@@ -212,10 +212,12 @@ var TEMAS = [
 var BRECHAS = { blog: [], ranking: [] }
 try { BRECHAS = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'brechas.json'), 'utf8')) } catch (e) {}
 var capBr = function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
-BRECHAS.blog.slice().reverse().forEach(function(kw) { TEMAS.unshift({ titulo: capBr(kw) + ': qué saber antes de elegir en 2026', kw: kw, tipo: 'editorial', brecha: true }) })
+(BRECHAS.temas || []).slice().reverse().forEach(function(t) { TEMAS.unshift({ titulo: t.titulo, kw: t.kw, tipo: 'pregunta', brecha: true, qa: true }) })
 
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes para el blog de LabLab. Tu escritura es empática, profesional y basada en datos reales del mercado laboral chileno.\n\nREGLAS CRÍTICAS:\n- El nombre de la empresa es "LabLab" (siempre capitalizado así). NUNCA escribir "Lab Lab", "LABLAB", "lab lab" ni ninguna otra variante.\n- Todo el contenido debe ser actual: año 2026. NUNCA mencionar años anteriores (2023, 2024, 2025) como si fueran actuales.\n- NUNCA mencionar competidores por nombre. Si necesitas comparar, usa descripciones genéricas ("otras consultoras", "firmas internacionales").\n- Párrafos cortos (3-4 oraciones). La gente que lee esto está en un momento de transición profesional.\n- Datos concretos: cifras del mercado laboral chileno, porcentajes de recolocación, plazos reales.\n- Tono: como un consultor senior empático. Profesional pero cercano. Sin jerga innecesaria.\n- CERO frases vacías: nada de "en el complejo mundo de", "cabe señalar", "es importante destacar".\n' +
 '- NUNCA inventar testimonios, citas textuales o casos de éxito ficticios. NO usar frases como "María comentó que...", "Juan, gerente de X, nos dijo...". Si mencionas resultados, usar datos genéricos verificables ("según estudios del mercado", "empresas del rubro reportan").\n- Cita fuentes autoritativas reales con links:\n  * DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n  * INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n  * SENCE: https://www.sence.cl — capacitación, programas de empleo\n  * Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\n- Incluye al menos 1 link externo a fuentes autoritativas en cada artículo.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
+
+SYSTEM_PROMPT += '\n\nFORMATO PREGUNTA-RESPUESTA (regla M&P nov 2026: que ChatGPT y Gemini puedan citar el artículo):\n- Cada H2, salvo Conclusión y Preguntas frecuentes, es una pregunta real que haría el lector, escrita completa y con el tema dentro.\n- La primera oración bajo cada H2 responde esa pregunta de forma directa, en máximo 40 palabras, y se entiende sola: repite el sujeto, sin "esto" ni "este".\n- Después de la respuesta va el detalle: criterios en lista, comparaciones en tabla.\n- Si no hay un dato verificable, no se inventa: se explica el criterio sin cifra.'
 
 var ESTILOS_INLINE = 'ESTILOS INLINE OBLIGATORIOS EN TODO EL HTML:\n- H2: style="color:#1a365d;font-size:24px;margin:32px 0 16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0"\n- H3: style="color:#2d3748;font-size:18px;margin:24px 0 12px"\n- Párrafos: style="line-height:1.8;margin-bottom:16px;color:#2d3748"\n- Listas UL: style="margin:16px 0;padding-left:24px;line-height:1.8"\n- LI: style="margin-bottom:8px;color:#2d3748"\n- Links: style="color:#2b6cb0;font-weight:500;text-decoration:underline"\n- Tablas: <table style="width:100%;border-collapse:collapse;margin:24px 0;font-size:15px;box-shadow:0 1px 2px rgba(0,0,0,0.06)">\n  <thead><tr><th style="background:#1a365d;color:white;padding:12px 16px;text-align:left;font-weight:600">...</th></tr></thead>\n  <tbody><tr><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr>\n  <tr style="background:#f7fafc"><td style="padding:10px 16px;border-bottom:1px solid #e2e8f0">...</td></tr></tbody></table>\n- Callout: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0"><strong>Importante:</strong> texto</div>'
 
@@ -343,13 +345,13 @@ async function validarYCorregir(art, raw, sysPr, usrPr) {
 
 // ═══ FAQ SCHEMA ═══
 function buildFaqSchema(html) {
-  var faqs = [], re = /<h3[^>]*>([^<]+)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi, m
+  var faqs = [], re = /<h[23][^>]*>([^<]+)<\/h[23]>\s*<p[^>]*>([\s\S]*?)<\/p>/gi, m
   while ((m = re.exec(html)) !== null) {
     var q = m[1].trim(), a = m[2].replace(/<[^>]+>/g, '').trim()
     if (q.includes('?') && a.length > 20) faqs.push({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })
   }
   if (!faqs.length) return ''
-  return '<script type="application/ld+json">' + JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.slice(0, 5) }) + '</script>'
+  return '<script type="application/ld+json">' + JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.slice(0, 12) }) + '</script>'
 }
 
 // ═══ NORMALIZE PARA DEDUP ═══
@@ -417,7 +419,7 @@ async function main() {
   var disponibles = TEMAS.filter(function(t) {
     var titleMatch = existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 })
     if (titleMatch) return false
-    if (existNorm.some(function(e) { return kwCubierta(t.kw.split(',')[0], e) })) return false
+    if (!t.qa && existNorm.some(function(e) { return kwCubierta(t.kw.split(',')[0], e) })) return false
     var tSlug = normalize(t.titulo).replace(/ /g, '-')
     var slugMatch = existSlugs.some(function(s) {
       return slugBase(s) === slugBase(tSlug) || slugBase(s).indexOf(tSlug.substring(0, 25)) === 0
@@ -446,6 +448,7 @@ async function main() {
       await new Promise(function(r) { setTimeout(r, 3000) })
       outline = await generarOutline(tema)
     }
+    if (tema.qa) { outline.titulo_seo = tema.titulo; outline.slug = String(tema.titulo).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) }
     outline.titulo_seo = await asegurarTitulo(outline.titulo_seo, OPENAI_KEY, fetch)
     var repetido = existSlugs.some(function(s) { return slugBase(s) === slugBase(outline.slug) }) ||
       existTitles.some(function(e) { return similarity(e, outline.titulo_seo) > 0.6 }) ||

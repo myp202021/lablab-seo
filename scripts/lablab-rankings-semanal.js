@@ -199,9 +199,11 @@ var TEMAS = [
 var BRECHAS = { blog: [], ranking: [] }
 try { BRECHAS = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'brechas.json'), 'utf8')) } catch (e) {}
 var capBr = function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
-BRECHAS.ranking.slice().reverse().forEach(function(kw) { TEMAS.unshift({ titulo: capBr(kw) + ': ranking y comparación 2026', kw: kw, tipo: 'ranking', brecha: true }) })
+(BRECHAS.rankings || []).slice().reverse().forEach(function(t) { TEMAS.unshift({ titulo: t.titulo, kw: t.kw, tipo: 'ranking', brecha: true, qa: true }) })
 
 var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes rankings y guías exhaustivas para el blog de LabLab. Tono: analista riguroso pero accesible. Datos verificables del mercado laboral chileno. NUNCA contenido genérico.\n\nREGLAS CRÍTICAS:\n- El nombre es "LabLab" (siempre capitalizado así). NUNCA "Lab Lab", "LABLAB" ni variantes.\n- Todo contenido es de 2026. NUNCA mencionar años anteriores como si fueran actuales.\n- NO mencionar competidores por nombre. Usar descripciones genéricas ("firmas internacionales", "consultoras locales").\n- Tablas HTML con estilos inline profesionales (background en headers, padding, bordes).\n- Usar callout boxes: <div style="background:#ebf8ff;border-left:4px solid #3182ce;padding:16px 20px;margin:20px 0;border-radius:0 8px 8px 0;">...</div>\n\nSIEMPRE cita fuentes autoritativas con links reales:\n- DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n- INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n- SENCE: https://www.sence.cl — capacitación, programas de empleo\n- Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\nIncluye al menos 2 links externos a estas fuentes en cada ranking.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
+
+SYSTEM_PROMPT += '\n\nFORMATO PREGUNTA-RESPUESTA (regla M&P nov 2026: que ChatGPT y Gemini puedan citar el artículo):\n- Cada H2, salvo Conclusión y Preguntas frecuentes, es una pregunta real que haría el lector, escrita completa y con el tema dentro.\n- La primera oración bajo cada H2 responde esa pregunta de forma directa, en máximo 40 palabras, y se entiende sola: repite el sujeto, sin "esto" ni "este".\n- Después de la respuesta va el detalle: criterios en lista, comparaciones en tabla.\n- Si no hay un dato verificable, no se inventa: se explica el criterio sin cifra.'
 
 // ═══ ANTI-DUPLICADOS (30 sept 2026) ═══
 // GPT reescribe los títulos ("Liderazgo en crisis..." → "Liderazgo Crisis Chile 2026: Retener Talento"), así que comparar
@@ -276,6 +278,7 @@ async function main() {
   console.log('HTML: ' + (art.contenido_html||'').length + ' chars')
 
   // Título ≤ 51 (el <title> agrega " – LabLab") y nada de temas repetidos (16 oct 2026: antes se agregaba -fecha al slug y se duplicaba)
+  if (tema.qa) { art.titulo_seo = tema.titulo; art.slug = String(tema.titulo).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) }
   art.titulo_seo = await asegurarTitulo(art.titulo_seo, OPENAI_KEY, fetch)
   var baseSlug = function(s) { return String(s || '').replace(/-consolidado$/, '').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '') }
   var yaCubierto = temaPublicado(art.titulo_seo, existTitles)

@@ -2,7 +2,7 @@ name: "LabLab — Ranking Semanal (Viernes 08:00 AM Chile)"
 
 on:
   schedule:
-    - cron: '0 11 * * 5'  # 11:00 UTC = 08:00 AM Chile — Viernes
+    - cron: '0 11 * * 2,5'  # 08:00 Chile, martes y viernes (regla 2 nov 2026: más rankings)
   workflow_dispatch:
 
 env:
