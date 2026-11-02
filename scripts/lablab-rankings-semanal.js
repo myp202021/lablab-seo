@@ -330,6 +330,10 @@ async function main() {
     mediaId = await subirImagenWP(imgBuf, art.titulo_seo || tema.titulo)
   }
 
+  // Regla M&P 19 oct: mínimo 3.000 palabras también en rankings
+  art.contenido_html = await require('./lib/largo').asegurarLargo(art.contenido_html, { tema: art.titulo_seo, sistema: SYSTEM_PROMPT })
+  require('./lib/largo').exigirLargo(art.contenido_html)
+
   console.log('\nPublicando...')
   var postBody = {
     title: art.titulo_seo, slug: art.slug, content: art.contenido_html, excerpt: art.extracto,

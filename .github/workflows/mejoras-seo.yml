@@ -22,6 +22,7 @@ jobs:
           node-version: '22'
       - run: node scripts/${{ inputs.script }}
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
           PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
           LABLAB_WP_USER: ${{ secrets.LABLAB_WP_USER }}
