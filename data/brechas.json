@@ -84,5 +84,183 @@
       "kw": "transición laboral para ejecutivos"
     }
   ],
-  "fecha": "2026-11-02"
+  "fecha": "2026-11-02",
+  "porQue": {
+    "outplacement Chile": {
+      "recomendados": [
+        "Empodera Consulting Group",
+        "GoFocus",
+        "LHH",
+        "Lukkap Chile",
+        "One Search"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "empresas de outplacement en Chile": {
+      "recomendados": [
+        "DNA Outplacement",
+        "Empodera",
+        "GoFocus",
+        "Interchile S.A",
+        "LHH"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "programa de outplacement para empresas": {
+      "recomendados": [
+        "Lukkap Chile",
+        "Smart Placement",
+        "Empodera Consulting Group",
+        "One Search",
+        "GoFocus"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "outplacement ejecutivo Santiago": {
+      "recomendados": [
+        "Empodera Consulting Group",
+        "ERGO Solutions",
+        "Executive Outplacement",
+        "Ikilab",
+        "Lukkap Chile"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "transición laboral para ejecutivos": {
+      "recomendados": [
+        "Smart Placement",
+        "LHH",
+        "Empodera Consulting Group",
+        "Yob lab",
+        "Opportunity Latam"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "consultora de outplacement": {
+      "recomendados": [
+        "Calev Outplacement",
+        "Calev Consulting Spa",
+        "DNA Outplacement",
+        "Empodera Consulting Group",
+        "Human Performance"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "retiro activo jubilación": {
+      "recomendados": [
+        "AFP Uno",
+        "AFP Modelo",
+        "AFP Habitat",
+        "AFP PlanVital",
+        "AFP Cuprum"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "recolocación laboral": {
+      "recomendados": [
+        "Codelco",
+        "Latam",
+        "Banco de Chile",
+        "BCI",
+        "Banco Santander"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "desvincular empleados": {
+      "recomendados": [
+        "Grow Partners",
+        "BDO Chile",
+        "Lukkap Chile",
+        "ERGO Solutions",
+        "Talent & Desarrollo"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "expertos en outplacement": {
+      "recomendados": [
+        "Empodera Consulting Group",
+        "GoFocus",
+        "LHH",
+        "Lukkap Chile",
+        "One Search"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "programas de outplacement": {
+      "recomendados": [
+        "DNA Outplacement",
+        "Empodera",
+        "GoFocus",
+        "Interchile S.A",
+        "LHH"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "mejor outplacement de chile": {
+      "recomendados": [
+        "Lukkap Chile",
+        "Smart Placement",
+        "Role Rangers",
+        "Empodera Consulting Group",
+        "GoFocus"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "outplacement empresas": {
+      "recomendados": [
+        "DNA Outplacement",
+        "Empodera",
+        "GoFocus",
+        "Interchile S.A",
+        "LHH"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "servicio de outplacement": {
+      "recomendados": [
+        "DNA Outplacement",
+        "Empodera Consulting Group",
+        "GoFocus",
+        "LHH Chile",
+        "Lukkap Chile"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "recolocación laboral chile": {
+      "recomendados": [
+        "Role Rangers",
+        "Smart Placement",
+        "Kambio",
+        "Tomic Consultores",
+        "PS Grupo Hunting"
+      ],
+      "fuentes": [],
+      "veces": null
+    },
+    "qué es outplacement": {
+      "recomendados": [
+        "outplacement",
+        "Lukkap Chile",
+        "Smart Placement",
+        "One Search",
+        "LHH"
+      ],
+      "fuentes": [],
+      "veces": null
+    }
+  }
 }
