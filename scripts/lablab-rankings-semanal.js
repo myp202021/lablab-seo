@@ -333,6 +333,8 @@ async function main() {
   // Regla M&P 19 oct: mínimo 3.000 palabras también en rankings
   art.contenido_html = await require('./lib/largo').asegurarLargo(art.contenido_html, { tema: art.titulo_seo, sistema: SYSTEM_PROMPT })
   require('./lib/largo').exigirLargo(art.contenido_html)
+  // M&P 12 nov 2026: verificador de fuentes (lib/verificar-fuentes.js) — ningún enlace roto o inventado se publica
+  art.contenido_html = (await require('./lib/verificar-fuentes').verificarFuentes(art.contenido_html, { dominioPropio: 'lablab.cl' })).html
 
   console.log('\nPublicando...')
   var postBody = {

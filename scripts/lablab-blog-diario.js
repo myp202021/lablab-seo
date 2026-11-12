@@ -529,6 +529,8 @@ async function main() {
   // M&P 19 oct 2026, regla para TODOS los agentes de blog: mínimo 3.000 palabras; si falta, se escribe por secciones y se une (lib/largo.js).
   art.contenido_html = await largo.asegurarLargo(art.contenido_html, { tema: art.titulo_seo, sistema: typeof SYSTEM_PROMPT !== 'undefined' ? SYSTEM_PROMPT : '' })
   largo.exigirLargo(art.contenido_html)
+  // M&P 12 nov 2026: verificador de fuentes (lib/verificar-fuentes.js) — ningún enlace roto o inventado se publica
+  art.contenido_html = (await require('./lib/verificar-fuentes').verificarFuentes(art.contenido_html, { dominioPropio: 'lablab.cl' })).html
   console.log('\nPublicando...')
   var postBody = {
     title: art.titulo_seo, slug: art.slug, content: art.contenido_html, excerpt: art.extracto,
