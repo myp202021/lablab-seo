@@ -88,6 +88,20 @@ function apertura(html, tag) {
   return m ? m[0] : "<" + tag + ">";
 }
 
+
+// Christopher, 16 nov 2026: "nada sin mínimo 10000 chars". Texto visible (sin HTML) de al menos 10.000 caracteres.
+var MIN_CARACTERES = 10000;
+function caracteres(html) {
+  return String(html || "").replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ").replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&[a-z#0-9]+;/gi, "x").replace(/\s+/g, " ").trim().length;
+}
+function exigirCaracteres(html) {
+  var c = caracteres(html);
+  console.log("Texto visible: " + c + " caracteres (mínimo " + MIN_CARACTERES + ")");
+  if (c < MIN_CARACTERES) throw new Error("Artículo de " + c + " caracteres visibles: el mínimo es " + MIN_CARACTERES + ". No se publica.");
+  return c;
+}
+
 // opciones: { tema, sistema (reglas del cliente), apiKey, modelo, minimo, log }
 async function asegurarLargo(html, opciones) {
   var o = opciones || {};
@@ -102,7 +116,7 @@ async function asegurarLargo(html, opciones) {
       "Escribes en español de Chile (o del país del cliente, si las reglas lo dicen), con todas las tildes. NUNCA inventas cifras, precios, estadísticas, nombres, clientes ni casos: amplías con explicación, criterios, pasos, ejemplos de operación y errores comunes.",
   };
   var n = palabras(html);
-  if (n >= Math.min(minimo, MINIMO)) return html;
+  if (n >= Math.min(minimo, MINIMO) && caracteres(html) >= MIN_CARACTERES) return html;
   log(
     "Largo: " +
       n +
@@ -254,12 +268,14 @@ async function asegurarLargo(html, opciones) {
     n = palabras(html);
     log("Tras secciones nuevas: " + n + " palabras");
   }
+  exigirCaracteres(html);
   return html;
 }
 
 function exigirLargo(html, minimo) {
   var n = palabras(html);
   console.log("Largo del artículo: " + n + " palabras");
+  exigirCaracteres(html);
   if (n < (minimo || MINIMO))
     throw new Error(
       "Artículo de " +
@@ -271,4 +287,4 @@ function exigirLargo(html, minimo) {
   return n;
 }
 
-module.exports = { asegurarLargo, exigirLargo, palabras, errorFatal, MINIMO, TOPE };
+module.exports = { asegurarLargo, exigirLargo, exigirCaracteres, caracteres, palabras, errorFatal, MINIMO, MIN_CARACTERES, TOPE };
