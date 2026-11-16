@@ -205,6 +205,33 @@ var TEMAS = [
   { titulo: 'Plan de sucesión: cómo preparar la salida de ejecutivos clave', kw: 'plan de sucesión empresas, sucesión ejecutivos, reemplazo gerentes', tipo: 'guía' },
   { titulo: 'Movilidad interna como alternativa al despido', kw: 'movilidad interna empresas, reubicación interna, alternativa al despido', tipo: 'educativo' },
   { titulo: 'Entrevistas por video y con IA: cómo prepararse', kw: 'entrevista por video, entrevista con inteligencia artificial, entrevista online', tipo: 'guía' },
+  // Tanda 3 (16 nov 2026): temas de RR.HH. ligados a los servicios de LabLab (outplacement personalizado y masivo,
+  // reestructuraciones, retiro activo, HRVOX, coaching de carrera, liderazgo, pago a éxito).
+  // Volumen mensual Chile (Planificador de palabras clave, nov 2025-oct 2026) entre corchetes.
+  { titulo: 'Cómo calcular el finiquito en Chile: ítems, plazos y ejemplos', kw: 'calcular finiquito, cálculo de finiquito, finiquito chile', tipo: 'guía' }, // [27.100]
+  { titulo: 'Plan de 90 días para buscar trabajo después de una desvinculación', kw: 'buscar trabajo, buscar trabajo después de un despido, búsqueda de empleo', tipo: 'guía' }, // [9.900]
+  { titulo: 'Ley 40 horas en 2026: qué cambia para las empresas y cómo reorganizar equipos', kw: 'ley 40 horas, reducción jornada laboral, ley 40 horas empresas', tipo: 'educativo' }, // [8.100]
+  { titulo: 'Autodespido en Chile: cuándo procede y cómo prevenirlo desde RR.HH.', kw: 'autodespido, despido indirecto, autodespido chile', tipo: 'educativo' }, // [4.400]
+  { titulo: 'Carta de presentación para postular en 2026: estructura y ejemplos', kw: 'carta de presentacion, carta de presentación laboral, ejemplo carta de presentación', tipo: 'guía' }, // [2.400]
+  { titulo: 'Pensión de vejez y reforma previsional: qué revisar antes de jubilar', kw: 'pension de vejez, reforma previsional, pensión de vejez requisitos', tipo: 'educativo' }, // [1.000]
+  { titulo: 'Despido injustificado: cómo evitarlo con un proceso de salida bien hecho', kw: 'despido injustificado, despido improcedente, demanda por despido', tipo: 'guía' }, // [880]
+  { titulo: 'Cultura organizacional después de una reestructuración: cómo reconstruir confianza', kw: 'cultura organizacional, clima después de despidos, reestructuración y cultura', tipo: 'educativo' }, // [880]
+  { titulo: 'Jubilación anticipada en Chile: requisitos y cómo preparar la transición', kw: 'jubilacion anticipada, pensión anticipada, jubilar antes', tipo: 'educativo' }, // [720]
+  { titulo: 'Gestión del cambio en reestructuraciones: guía para líderes de RR.HH.', kw: 'gestion del cambio, gestión del cambio organizacional, cambio organizacional', tipo: 'guía' }, // [590]
+  { titulo: 'Fuero laboral: a quién protege y qué hacer antes de una desvinculación', kw: 'fuero laboral, fuero maternal, trabajadores con fuero', tipo: 'educativo' }, // [590]
+  { titulo: 'Test psicolaboral: qué evalúa y cómo prepararse para rendirlo', kw: 'test psicolaboral, evaluación psicolaboral, prueba psicolaboral', tipo: 'guía' }, // [590]
+  { titulo: 'Feriado proporcional al terminar la relación laboral: cómo se calcula', kw: 'feriado proporcional, vacaciones proporcionales, cálculo feriado proporcional', tipo: 'guía' }, // [480]
+  { titulo: 'Assessment center: cómo funciona y qué buscan los evaluadores', kw: 'assessment center, assessment de selección, evaluación por competencias', tipo: 'educativo' }, // [390]
+  { titulo: 'Bienestar laboral en procesos de desvinculación: qué puede hacer la empresa', kw: 'bienestar laboral, bienestar de los colaboradores, salud laboral', tipo: 'guía' }, // [170]
+  { titulo: 'Encuesta de clima laboral: cómo diseñarla y actuar sobre los resultados', kw: 'encuesta de clima laboral, medir clima laboral, clima organizacional', tipo: 'guía' }, // [110] HRVOX
+  { titulo: 'Encuesta de onboarding: qué preguntar en los primeros 90 días', kw: 'encuesta onboarding, onboarding de empleados, experiencia del colaborador', tipo: 'guía' }, // HRVOX
+  { titulo: 'Reconversión laboral: cómo cambiar de industria con experiencia previa', kw: 'reconversion laboral, cambio de rubro, reconversión profesional', tipo: 'guía' }, // [90]
+  { titulo: 'Salario emocional: beneficios que retienen talento sin subir sueldos', kw: 'salario emocional, beneficios para empleados, retención de talento', tipo: 'educativo' }, // [90]
+  { titulo: 'Rotación de personal: cómo medirla y bajar la salida no deseada', kw: 'rotacion de personal, índice de rotación, tasa de rotación laboral', tipo: 'guía' }, // [90]
+  { titulo: 'El día D de una desvinculación: cómo preparar a los líderes que comunican', kw: 'capacitar líderes desvinculación, día de la desvinculación, comunicar término de contrato', tipo: 'guía' },
+  { titulo: 'Outplacement con pago a éxito: cómo funciona y para quién conviene', kw: 'outplacement pago a éxito, pago por resultado recolocación, outplacement personas', tipo: 'educativo' },
+  { titulo: 'Programa de liderazgo para jefaturas nuevas: qué debe incluir', kw: 'programa de liderazgo, desarrollo de liderazgo, formación de jefaturas', tipo: 'guía' }, // [30]
+  { titulo: 'Plan de carrera interno: cómo diseñarlo para retener a los mejores', kw: 'plan de carrera, desarrollo de carrera, movilidad de carrera', tipo: 'guía' }, // [40]
 ]
 
 
@@ -407,7 +434,7 @@ async function main() {
     existRaw = existRaw.concat(lote)
     if (lote.length < 100) break
   }
-  var existTitles = existRaw.map(function(p) { return p.title.rendered })
+  var existTitles = existRaw.map(function(p) { return String(p.title.rendered).replace(/&#(\d+);/g, function(m, n) { return String.fromCharCode(n) }).replace(/&amp;/g, '&').replace(/&quot;/g, '"') })
   var existSlugs = existRaw.map(function(p) { return p.slug })
   console.log('Posts existentes: ' + existTitles.length)
 
@@ -425,18 +452,25 @@ async function main() {
     })
     return !slugMatch
   })
+  // Brechas primero; si se descartan todas en la validación del outline, se sigue con los temas normales
+  // (16 nov 2026: dos brechas ya existían como borrador y bloqueaban la publicación aunque había 24 temas libres)
   var conBrecha = disponibles.filter(function(x) { return x.brecha })
-  if (conBrecha.length) disponibles = conBrecha
+  var sinBrecha = disponibles.filter(function(x) { return !x.brecha })
+  if (conBrecha.length) disponibles = conBrecha.slice()
+  else sinBrecha = []
+  console.log('Temas libres: ' + conBrecha.length + ' brechas + ' + sinBrecha.length + ' normales (de ' + TEMAS.length + ')')
   if (!disponibles.length) {
     console.log('⚠️ Todos los temas ya fueron cubiertos. Hay que agregar temas nuevos a TEMAS.')
     process.exitCode = 1
     return
   }
-  if (disponibles.length <= 5) console.log('⚠️ Quedan solo ' + disponibles.length + ' temas sin publicar: agregar temas nuevos a TEMAS.')
+  if (conBrecha.length + sinBrecha.length <= 5) console.log('⚠️ TEMAS POR ACABARSE: quedan solo ' + (conBrecha.length + sinBrecha.length) + ' temas sin publicar: agregar temas nuevos a TEMAS.')
   // Elegir tema y validar el outline contra lo publicado: si el slug/título generado ya existe,
   // es el mismo tema con otras palabras → descartar y probar otro (antes se publicaba con -fecha y duplicaba)
   var tema, outline
-  for (var intento = 0; intento < 4 && disponibles.length; intento++) {
+  for (var intento = 0; intento < 6; intento++) {
+    if (!disponibles.length && sinBrecha.length) { disponibles = sinBrecha; sinBrecha = [] }
+    if (!disponibles.length) break
     tema = disponibles.splice(Math.floor(Math.random() * disponibles.length), 1)[0]
     console.log('Tema: ' + tema.titulo + '\nKW: ' + tema.kw + '\nDisponibles: ' + (disponibles.length + 1) + '/' + TEMAS.length)
     console.log('\nGenerando artículo sección por sección...')
@@ -457,7 +491,7 @@ async function main() {
     outline = null
   }
   if (!outline) {
-    console.log('⚠️ No se encontró tema nuevo tras 4 intentos. No se publica para evitar duplicados.')
+    console.log('⚠️ No se encontró tema nuevo tras 6 intentos. No se publica para evitar duplicados.')
     process.exitCode = 1
     return
   }
