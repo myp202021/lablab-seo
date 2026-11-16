@@ -240,8 +240,8 @@ var BRECHAS = { blog: [], ranking: [] }
 try { BRECHAS = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'data', 'brechas.json'), 'utf8')) } catch (e) {}
 (BRECHAS.temas || []).slice().reverse().forEach(function(t) { TEMAS.unshift({ titulo: t.titulo, kw: t.kw, tipo: 'pregunta', brecha: true, qa: true }) })
 
-var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes para el blog de LabLab. Tu escritura es empática, profesional y basada en datos reales del mercado laboral chileno.\n\nREGLAS CRÍTICAS:\n- El nombre de la empresa es "LabLab" (siempre capitalizado así). NUNCA escribir "Lab Lab", "LABLAB", "lab lab" ni ninguna otra variante.\n- Todo el contenido debe ser actual: año 2026. NUNCA mencionar años anteriores (2023, 2024, 2025) como si fueran actuales.\n- NUNCA mencionar competidores por nombre. Si necesitas comparar, usa descripciones genéricas ("otras consultoras", "firmas internacionales").\n- Párrafos cortos (3-4 oraciones). La gente que lee esto está en un momento de transición profesional.\n- Datos concretos: cifras del mercado laboral chileno, porcentajes de recolocación, plazos reales.\n- Tono: como un consultor senior empático. Profesional pero cercano. Sin jerga innecesaria.\n- CERO frases vacías: nada de "en el complejo mundo de", "cabe señalar", "es importante destacar".\n' +
-'- NUNCA inventar testimonios, citas textuales o casos de éxito ficticios. NO usar frases como "María comentó que...", "Juan, gerente de X, nos dijo...". Si mencionas resultados, usar datos genéricos verificables ("según estudios del mercado", "empresas del rubro reportan").\n- Cita fuentes autoritativas reales con links:\n  * DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n  * INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n  * SENCE: https://www.sence.cl — capacitación, programas de empleo\n  * Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\n- Incluye al menos 1 link externo a fuentes autoritativas en cada artículo.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
+var SYSTEM_PROMPT = 'Eres un experto en outplacement, transición laboral y recursos humanos en Chile con 15 años de experiencia. Escribes para el blog de LabLab. Tu escritura es empática, profesional y basada en datos reales del mercado laboral chileno.\n\nREGLAS CRÍTICAS:\n- El nombre de la empresa es "LabLab" (siempre capitalizado así). NUNCA escribir "Lab Lab", "LABLAB", "lab lab" ni ninguna otra variante.\n- Todo el contenido debe ser actual: año 2026. NUNCA mencionar años anteriores (2023, 2024, 2025) como si fueran actuales.\n- NUNCA mencionar competidores por nombre. Si necesitas comparar, usa descripciones genéricas ("otras consultoras", "firmas internacionales").\n- Párrafos cortos (3-4 oraciones). La gente que lee esto está en un momento de transición profesional.\n- PROHIBIDO inventar cifras: NINGÚN porcentaje ni número atribuido al INE, la Dirección del Trabajo, SENCE, \"estudios\" o \"reportes del mercado\". Si no tienes la cifra exacta con su fuente, explica el concepto sin números. Las fuentes oficiales se enlazan para normativa o para que el lector consulte, no para respaldar porcentajes.\n- PROHIBIDO tablas o comparaciones de LabLab contra \"otras consultoras\". LabLab fue fundada en 2019: nunca decir \"15 años\" de LabLab.\n- La recolocación/outplacement NO es obligatoria por ley en Chile: nunca decir que evita multas o asegura cumplimiento legal.\n- Tutear siempre al lector (tú), nunca usted.\n- Tono: como un consultor senior empático. Profesional pero cercano. Sin jerga innecesaria.\n- CERO frases vacías: nada de "en el complejo mundo de", "cabe señalar", "es importante destacar".\n' +
+'- NUNCA inventar testimonios, citas textuales o casos de éxito ficticios. NO usar frases como "María comentó que...", "Juan, gerente de X, nos dijo...". Si mencionas resultados, descríbelos sin cifras ni porcentajes.\n- Cita fuentes autoritativas reales con links:\n  * DT (Dirección del Trabajo): https://www.dt.gob.cl — estadísticas laborales, normativa\n  * INE: https://www.ine.gob.cl — datos de empleo, encuestas laborales\n  * SENCE: https://www.sence.cl — capacitación, programas de empleo\n  * Código del Trabajo: https://www.leychile.cl/Navegar?idNorma=207436\n- Incluye al menos 1 link externo a fuentes autoritativas en cada artículo.\n\nDATOS LabLab:\n- Especialistas en outplacement y transición laboral\n- +100 empresas clientes, +15.000 personas acompañadas\n- Tecnología + IA + consultores senior\n- Programas: Outplacement ejecutivo, profesional, masivo, Retiro Activo, Coaching, FastRace\n- contacto@lablab.cl\n- Fundada en 2019'
 
 SYSTEM_PROMPT += '\n\nFORMATO PREGUNTA-RESPUESTA (regla M&P nov 2026: que ChatGPT y Gemini puedan citar el artículo):\n- Cada H2, salvo Conclusión y Preguntas frecuentes, es una pregunta real que haría el lector, escrita completa y con el tema dentro.\n- La primera oración bajo cada H2 responde esa pregunta de forma directa, en máximo 40 palabras, y se entiende sola: repite el sujeto, sin "esto" ni "este".\n- Después de la respuesta va el detalle: criterios en lista, comparaciones en tabla.\n- Si no hay un dato verificable, no se inventa: se explica el criterio sin cifra.'
 
@@ -565,10 +565,17 @@ async function main() {
   largo.exigirLargo(art.contenido_html)
   // M&P 12 nov 2026: verificador de fuentes (lib/verificar-fuentes.js) — ningún enlace roto o inventado se publica
   art.contenido_html = (await require('./lib/verificar-fuentes').verificarFuentes(art.contenido_html, { dominioPropio: 'lablab.cl' })).html
+  // M&P 16 nov 2026 (Christopher: "léelos y compruébalo bien"): el agente inventaba porcentajes atribuidos a INE/DT/SENCE.
+  // Si quedan porcentajes o comparativas contra otras consultoras, NO se publica: queda en borrador para revisión.
+  var _txt = art.contenido_html.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<[^>]+>/g, ' ')
+  var _pct = _txt.match(/[^.]{0,80}\d+(?:[.,]\d+)?\s?%[^.]{0,40}/g) || []
+  var _comp = /otras consultoras<\/t[hd]>|<t[hd][^>]*>\s*otras consultoras/i.test(art.contenido_html)
+  var _estado = (_pct.length || _comp) ? 'draft' : 'publish'
+  if (_estado === 'draft') console.log('  ⚠️ NO se publica: queda en BORRADOR. Porcentajes: ' + _pct.length + (_comp ? ' + tabla contra otras consultoras' : '') + '\n    ' + _pct.slice(0, 5).join('\n    '))
   console.log('\nPublicando...')
   var postBody = {
     title: art.titulo_seo, slug: art.slug, content: art.contenido_html, excerpt: art.extracto,
-    status: 'publish', categories: [blogCatId],
+    status: _estado, categories: [blogCatId],
     meta: {
       rank_math_title: art.titulo_seo, _yoast_wpseo_title: art.titulo_seo, _seo_title: art.titulo_seo + ' | LabLab',
       rank_math_description: art.meta_description, _yoast_wpseo_metadesc: art.meta_description, _seo_description: art.meta_description,
@@ -581,6 +588,10 @@ async function main() {
     body: JSON.stringify(postBody)
   })
   var post = await pubRes.json()
+  if (post.id && _estado === 'draft') {
+    console.log('\n📝 BORRADOR (no publicado, sin IndexNow ni correo al cliente)\n   ID: ' + post.id + '\n   Revisar en: ' + WP_URL + '/wp-admin/post.php?post=' + post.id + '&action=edit')
+    return
+  }
   if (post.id) {
     var url = post.link || WP_URL + '/' + art.slug + '/'
     console.log('\n✅ PUBLICADO\n   ID: ' + post.id + '\n   URL: ' + url + '\n   HTML: ' + (art.contenido_html||'').length + ' chars')
