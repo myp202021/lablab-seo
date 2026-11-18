@@ -2,6 +2,16 @@ name: "LabLab — Blog Diario (07:30 AM Chile)"
 
 on:
   workflow_dispatch:
+    inputs:
+      forzar:
+        description: 'Publicar aunque ya haya un artículo hoy (1 = sí)'
+        required: false
+        default: '0'
+
+# Nunca dos corridas a la vez (18 nov 2026: dos procesos simultáneos publicaron el mismo tema)
+concurrency:
+  group: lablab-blog
+  cancel-in-progress: false
 
 env:
   GMAIL_USER: ${{ secrets.GMAIL_USER }}
@@ -29,6 +39,7 @@ jobs:
           RESEND: ${{ secrets.RESEND }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
           PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+          FORZAR: ${{ github.event.inputs.forzar }}
 
       - name: "Alerta si falla"
         if: failure()

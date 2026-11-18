@@ -405,6 +405,27 @@ function kwCubierta(kw, tituloNorm) {
   })
 }
 
+function kwEnSlug(kw, slugs) {
+  var k = normalize(kw).replace(/ /g, '-')
+  if (k.split('-').length < 2) return false
+  return slugs.some(function(s) { return slugBase(s).replace(/-20\d{2}$/, '') === k })
+}
+
+// 18 nov 2026: hubo duplicados (9569/9570, 9593/9594, 9715/9716) porque dos procesos corrían a la vez (cron del Mac y
+// GitHub) y ambos leían la lista de posts antes de que el otro publicara. Justo antes de publicar se vuelve a leer lo
+// publicado en las últimas 72 h (incluye borradores y programados) y se aborta si hay un post igual o del mismo tema.
+async function chequeoFinal(art) {
+  var desde = new Date(Date.now() - 72 * 3600 * 1000).toISOString().slice(0, 19)
+  var r = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?status=publish,draft,future,pending&after=' + desde + '&per_page=50&_fields=id,title,slug', { headers: { Authorization: AUTH, 'User-Agent': UA } })
+  var lista = await r.json()
+  if (!Array.isArray(lista)) throw new Error('chequeo final: no se pudo leer lo publicado recién (' + JSON.stringify(lista).slice(0, 120) + ')')
+  var choque = lista.find(function(p) {
+    var t = String(p.title.rendered || '').replace(/&#(\d+);/g, function(m, n) { return String.fromCharCode(n) }).replace(/&amp;/g, '&')
+    return slugBase(p.slug) === slugBase(art.slug) || similarity(t, art.titulo_seo) > 0.6 || !!temaPublicado(art.titulo_seo, [t])
+  })
+  return choque || null
+}
+
 function slugBase(s) {
   return (s||'').replace(/-consolidado$/, '').replace(/-20\d{6,8}$/, '').replace(/-\d+$/, '')
 }
@@ -419,7 +440,9 @@ async function main() {
   // Ensure Blog category exists
   var blogCatId = await ensureBlogCategory()
 
-  var forceRun = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch'
+  // 18 nov 2026: el vigilante dispara este workflow con workflow_dispatch todos los días, así que «manual» ya no
+  // significa «forzar». Solo se salta el chequeo de «ya se publicó hoy» con FORZAR=1 (input del workflow).
+  var forceRun = process.env.FORZAR === '1' || process.env.FORZAR === 'true'
   var hoy = new Date().toISOString().split('T')[0]
   var res0 = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts?after=' + hoy + 'T00:00:00&status=publish&per_page=5', { headers: { Authorization: AUTH, 'User-Agent': UA } })
   var hoyPosts = await res0.json()
@@ -446,6 +469,9 @@ async function main() {
     var titleMatch = existTitles.some(function(e) { return similarity(e, t.titulo) > 0.7 })
     if (titleMatch) return false
     if (!t.qa && existNorm.some(function(e) { return kwCubierta(t.kw.split(',')[0], e) })) return false
+    // Temas pregunta/brecha: si la keyword principal ya es la URL de un artículo, es el mismo tema (18 nov 2026:
+    // «retiro activo jubilación» se publicó otra vez aunque existía /retiro-activo-jubilacion-2026/)
+    if (t.qa && kwEnSlug(t.kw.split(',')[0], existSlugs)) return false
     var tSlug = normalize(t.titulo).replace(/ /g, '-')
     var slugMatch = existSlugs.some(function(s) {
       return slugBase(s) === slugBase(tSlug) || slugBase(s).indexOf(tSlug.substring(0, 25)) === 0
@@ -572,6 +598,12 @@ async function main() {
   var _comp = /otras consultoras<\/t[hd]>|<t[hd][^>]*>\s*otras consultoras/i.test(art.contenido_html)
   var _estado = (_pct.length || _comp) ? 'draft' : 'publish'
   if (_estado === 'draft') console.log('  ⚠️ NO se publica: queda en BORRADOR. Porcentajes: ' + _pct.length + (_comp ? ' + tabla contra otras consultoras' : '') + '\n    ' + _pct.slice(0, 5).join('\n    '))
+  var choque = await chequeoFinal(art)
+  if (choque) {
+    console.log('  ❌ Otro proceso publicó el mismo tema hace poco (ID ' + choque.id + ', /' + choque.slug + '/). No se publica.')
+    process.exitCode = 1
+    return
+  }
   console.log('\nPublicando...')
   var postBody = {
     title: art.titulo_seo, slug: art.slug, content: art.contenido_html, excerpt: art.extracto,
@@ -586,7 +618,7 @@ async function main() {
   var pubRes = await fetchRetry(WP_URL + '/wp-json/wp/v2/posts', {
     method: 'POST', headers: { Authorization: AUTH, 'Content-Type': 'application/json', 'User-Agent': UA },
     body: JSON.stringify(postBody)
-  })
+  }, 1)  // sin reintentos: si el proxy da 5xx con el post ya creado, reintentar lo duplica
   var post = await pubRes.json()
   if (post.id && _estado === 'draft') {
     console.log('\n📝 BORRADOR (no publicado, sin IndexNow ni correo al cliente)\n   ID: ' + post.id + '\n   Revisar en: ' + WP_URL + '/wp-admin/post.php?post=' + post.id + '&action=edit')

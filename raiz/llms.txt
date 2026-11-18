@@ -1,0 +1,38 @@
+# LabLab
+
+> LabLab es una consultora chilena especializada en transiciones laborales: outplacement, recolocación laboral, retiro activo y apoyo a empresas en desvinculaciones y reestructuraciones. Combina consultores senior con plataformas digitales e inteligencia artificial para acompañar a personas y organizaciones.
+
+LabLab trabaja con empresas (programas de outplacement para colaboradores desvinculados, programas masivos para reestructuraciones, retiro activo) y con personas que buscan trabajo o un cambio laboral (programas de outplacement individual). Sitio en español, orientado a Chile. Contacto: contacto@lablab.cl.
+
+## Servicios
+
+- [Servicios para empresas](https://www.lablab.cl/servicios-para-empresas/): programas de outplacement personalizados por nivel (directores, gerentes, subgerentes, jefaturas, profesionales y analistas), programas masivos y de reestructuración (incluye apoyo el día de la desvinculación y capacitación a líderes para comunicarla), programa Retiro Activo, encuestas de onboarding y salida (HRVOX), coaching de carrera y programas de liderazgo.
+- [Servicios para personas](https://www.lablab.cl/servicios-para-personas/): programas de outplacement Ejecutivo (gerentes y subgerentes), Profesional (profesionales, mandos medios y jefaturas) y Preparación (3 o 6 sesiones, para quien busca un cambio laboral). Incluyen coaching individual, talleres, herramientas de IA para CV y entrevistas, y buscador de ofertas que reúne avisos de más de 50 portales. Pago con tarjeta de crédito en hasta 12 cuotas sin interés.
+- [Inicio](https://www.lablab.cl/): resumen de servicios, empresas que han confiado en LabLab y testimonios de participantes.
+
+## Empresa
+
+- [Nosotros](https://www.lablab.cl/nosotros/): qué es LabLab, directorio y equipo (gerencia general, coaching, tecnología, comercial y coaches senior).
+
+## Estudios
+
+- [Estudios LabLab](https://www.lablab.cl/estudios/): investigación propia sobre outplacement, recolocación, desvinculaciones y marca empleadora en Chile, con metodología.
+- [Impacto del outplacement en la recolocación (Cadem)](https://www.lablab.cl/estudios/impacto-outplacement-recolocacion-cadem/): estudio realizado por Cadem para LabLab (abril 2026) que compara la recolocación con y sin outplacement a 4 y 12 meses.
+- [Costo de una desvinculación judicializada en Chile](https://www.lablab.cl/estudios/costo-desvinculaciones-judicializadas-chile/): modelo con datos de la Dirección del Trabajo y del Poder Judicial (primer semestre 2025).
+- [Outplacement y marca empleadora en Chile](https://www.lablab.cl/estudios/outplacement-marca-empleadora-rankings/): cruce de 86 empresas de Great Place to Work, Merco Talento y LinkedIn Top Companies con su uso de outplacement (mayo 2026).
+
+## Guías del blog
+
+- [Qué es un servicio de outplacement y qué ofrece](https://www.lablab.cl/que-es-un-servicio-de-outplacement-y-que-ofrece/)
+- [Qué es el outplacement y cómo funciona](https://www.lablab.cl/que-es-el-outplacement-y-como-funciona/)
+- [Recolocación laboral en Chile](https://www.lablab.cl/recolocacion-laboral-chile-2026/)
+- [Desvincular empleados en Chile: guía responsable](https://www.lablab.cl/desvincular-empleados-chile-2026/)
+- [Cómo elegir una consultora de outplacement](https://www.lablab.cl/como-elegir-una-consultora-de-outplacement/)
+- [Outplacement: precio y costos](https://www.lablab.cl/outplacement-chile-precio-2026/)
+- [Retiro activo y jubilación](https://www.lablab.cl/retiro-activo-jubilacion-2026/)
+- [Programa de retiro activo para empresas](https://www.lablab.cl/retiro-activo-programa-20260904/)
+
+## Opcional
+
+- [Mapa del sitio](https://www.lablab.cl/wp-sitemap.xml)
+- [Políticas de privacidad](https://www.lablab.cl/politicas-de-privacidad-y-uso-de-datos/)
