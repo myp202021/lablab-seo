@@ -1,12 +1,7 @@
 {
   "blog": [
-    "outplacement Chile",
-    "programa de outplacement para empresas",
-    "transición laboral para ejecutivos",
-    "consultoras de transición laboral",
-    "desvincular empleados",
+    "consultora de outplacement",
     "outplacement empresas",
-    "servicio de outplacement",
     "recolocación laboral chile",
     "qué es outplacement"
   ],
@@ -14,19 +9,7 @@
     "outplacement Chile",
     "empresas de outplacement en Chile",
     "programa de outplacement para empresas",
-    "outplacement ejecutivo Santiago",
-    "transición laboral para ejecutivos",
-    "consultora de outplacement",
-    "retiro activo jubilación",
-    "recolocación laboral",
-    "desvincular empleados",
-    "expertos en outplacement",
-    "programas de outplacement",
-    "mejor outplacement de chile",
-    "outplacement empresas",
-    "servicio de outplacement",
-    "recolocación laboral chile",
-    "qué es outplacement"
+    "consultora de outplacement"
   ],
   "temas": [
     {
@@ -88,5 +71,87 @@
       "kw": "expertos en outplacement"
     }
   ],
-  "fecha": "2026-11-16"
+  "fecha": "2026-11-16",
+  "porQue": {
+    "outplacement Chile": {
+      "recomendados": [
+        "LHH Chile",
+        "Lukkap Chile",
+        "Oquatro",
+        "Smart Placement",
+        "ERGO Solutions"
+      ],
+      "fuentes": [
+        "placehunter.cl",
+        "ergosolutions.cl",
+        "lhh.cl",
+        "bcorporation.net",
+        "cl.linkedin.com",
+        "smartplacement.net",
+        "yoblab.com",
+        "opportunitylatam.cl"
+      ],
+      "veces": "0/3"
+    },
+    "empresas de outplacement en Chile": {
+      "recomendados": [
+        "Lukkap Chile",
+        "LHH Chile",
+        "Smart Placement",
+        "Yob lab",
+        "Oquatro"
+      ],
+      "fuentes": [
+        "cl.linkedin.com",
+        "placehunter.cl",
+        "bcorporation.net",
+        "lhh.cl",
+        "smartplacement.net",
+        "ergosolutions.cl",
+        "yoblab.com",
+        "talentoydesarrollo.cl"
+      ],
+      "veces": "0/3"
+    },
+    "programa de outplacement para empresas": {
+      "recomendados": [
+        "Lukkap Chile",
+        "Smart Placement",
+        "ERGO Solutions",
+        "LHH Chile",
+        "One Search"
+      ],
+      "fuentes": [
+        "placehunter.cl",
+        "lhh.cl",
+        "bcorporation.net",
+        "smartplacement.net",
+        "yoblab.com",
+        "ergosolutions.cl",
+        "onesearch.cl",
+        "opportunitylatam.cl"
+      ],
+      "veces": "0/3"
+    },
+    "consultora de outplacement": {
+      "recomendados": [
+        "ThinkGo",
+        "Calev Outplacement",
+        "Lukkap Chile",
+        "Yob Lab",
+        "Oquatro"
+      ],
+      "fuentes": [
+        "google.com",
+        "cl.linkedin.com",
+        "placehunter.cl",
+        "thinkgo.cl",
+        "yoblab.com",
+        "smartplacement.net",
+        "lhh.cl",
+        "tomicconsultores.cl"
+      ],
+      "veces": "0/3"
+    }
+  }
 }
